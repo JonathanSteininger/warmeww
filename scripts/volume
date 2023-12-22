@@ -1,0 +1,6 @@
+#! /usr/bin/bash
+volumeOut=`wpctl get-volume @DEFAULT_AUDIO_SINK@`
+MULTIPLIER=100
+volumeOut=$(awk '{print $2}' <<< "${volumeOut}")
+volumeOut=$(bc -l <<<"scale=0;(${volumeOut}*${MULTIPLIER})/1")
+echo $volumeOut

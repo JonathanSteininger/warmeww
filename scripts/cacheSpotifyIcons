@@ -1,0 +1,24 @@
+#! /usr/bin/bash
+while read -r link;
+do
+#get file name
+filename=`tr "/" " " <<< "$link" | awk '{print $NF}'`
+finalPath="spotifyicons/$filename"
+outputPath="scripts/$finalPath"
+finalPath="/home/aureus/.config/eww/$outputPath"
+
+#checks to save file
+if test -f $finalPath; then
+    #file exists, do nothing
+    #return relative path to file from eww.yuck
+    echo $outputPath
+else
+    #file does not exist. save file
+    curl $link > "$finalPath"
+    #return relative path to file from eww.yuck
+    echo $outputPath
+fi
+done
+
+
+

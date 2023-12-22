@@ -1,0 +1,58 @@
+#! /usr/bin/bash
+
+commandIn=$1
+inputIn=$2
+
+openWindowPath="/home/aureus/.config/eww/scripts/states/openWindow"
+
+getOpenWindow=`head $openWindowPath`
+
+#functions
+
+closeWindow () {
+    eww close windowCloser
+    if test "$getOpenWindow" != ""; then
+        eww close $getOpenWindow
+        echo "" > $openWindowPath
+    fi
+}
+
+openWindow () {
+    if test "$1" == "$getOpenWindow"; then
+        closeWindow
+    else
+        closeWindow
+        eww open windowCloser
+        eww open $1
+        echo "$1" > $openWindowPath
+    fi
+}
+
+printHelp () {
+    echo "
+Usage: windowManger [COMMAND] <INPUT>
+
+Commands:
+    help - prints a simple help menu into stdout.
+    open <INPUT> - sets INPUT as the active window.
+    close - closes and clears the current window."
+}
+
+
+
+#check mode
+if test "$commandIn" == "help"; then
+    printHelp
+elif test "$commandIn" == ""; then
+    printHelp
+elif test "$commandIn" == "close"; then
+    closeWindow
+elif test "$commandIn" == "open"; then
+    openWindow "$inputIn"
+else
+    echo "invalid command"
+fi
+
+
+            
+

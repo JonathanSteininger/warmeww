@@ -1,0 +1,145 @@
+#! /usr/bin/bash
+
+printHelp () {
+    echo "
+Usage: getAudioDevices [COMMAND]
+
+Commands:
+    amount - returns the amount of audio sinks.
+    names - returns an array of audio sink names.
+    ids - returns an array of audio sink ids.
+    defauls - returns an array of boolean values depending if the sink is default.
+    help - prints the help menu
+"
+}
+
+# output: "NUM"
+printAmount () {
+    echo "$(wc -l <<< "$sinks")"
+}
+
+# output: "[['NAME'], ...]"
+printNames () {
+    local output="["
+    local flag=true
+    while read -r line; do
+        if $flag;then
+            output="${output}\"$(awk -F ';' '{ print $2 }' <<< "$line")\""
+        else
+            output="$output, \"$(awk -F ';' '{ print $2 }' <<< "$line")\""
+        fi
+        flag=false
+    done < <(printf '%s\n' "$sinks") 
+    output="${output}]"
+    echo $output
+}
+
+printAll () {
+    local output="[ "
+    local flag=false
+    while read -r line; do
+        if $flag;then
+            output="${output}, "
+        fi
+        flag=true
+
+        local id="$(awk -F ';' '{ print $1 }' <<< "$line")"
+        local name="$(awk -F ';' '{ print $2 }' <<< "$line")"
+        local default=false
+        if [[ "$(grep "${id}." <<< "$wpctlStatusRaw")" == *"*"* ]];then
+            default=true
+        fi
+
+        output="${output}[ ${default}, ${id}, \"${name}\"]"
+    done < <(printf '%s\n' "$sinks") 
+    output="${output}]"
+    echo $output
+}
+
+# output: "[[ID], ...]"
+printIDs () {
+    local output="["
+    local flag=true
+    while read -r line; do
+        if $flag;then
+            output="${output}[$(awk -F ';' '{ print $1 }' <<< "$line")]"
+        else
+            output="$output, [$(awk -F ';' '{ print $1 }' <<< "$line")]"
+        fi
+        flag=false
+    done < <(printf '%s\n' "$sinks") 
+    output="${output}]"
+    echo $output
+}
+
+# output: "[[false], ...]"
+printDefaults () {
+    local output="["
+    local flag=true
+    while read -r line; do
+        if $flag;then
+            local id="$(awk -F ';' '{ print $1 }' <<< "$line")"
+            if [[ "$(grep "${id}." <<< "$wpctlStatusRaw")" == *"*"* ]];then
+                output="${output}[true]"
+            else
+                output="${output}[false]"
+            fi
+        else
+            local id="$(awk -F ';' '{ print $1 }' <<< "$line")"
+            if [[ "$(grep "${id}." <<< "$wpctlStatusRaw")" == *"*"* ]];then
+                output="${output}, [true]"
+            else
+                output="${output}, [false]"
+            fi
+        fi
+        flag=false
+    done < <(printf '%s\n' "$sinks") 
+    output="${output}]"
+    echo $output
+}
+
+# gets sink devices. one line each: "NUM; NAME"
+
+wpctlStatusRaw=$(wpctl status)
+wpctlStatus=$(wpctl status | tr -d "*│├─" | awk -F "[.[]" '{ print $1 ";" $2 }')
+sinks=""
+sinkStartFlag=false
+while read -r line; do
+    if test "$line" == ";"; then
+        sinkStartFlag=false
+    fi
+
+    if $sinkStartFlag; then
+        if test -n "$sinks"; then
+            sinks="$sinks"$'\n'"$line" 
+        else
+            sinks="$line" 
+        fi
+            
+    fi
+    if test "$line" == "Sinks:;"; then
+        sinkStartFlag=true
+    fi
+done < <(printf '%s\n' "$wpctlStatus")
+
+
+if test "$1" == "help";then
+    printHelp
+elif test "$1" == "amount";then
+    printAmount
+elif test "$1" == "names";then
+    printNames
+elif test "$1" == "ids";then
+    printIDs
+elif test "$1" == "defaults";then
+    printDefaults
+elif test "$1" == "all";then
+    printAll
+else
+    printHelp
+fi
+
+
+
+
+

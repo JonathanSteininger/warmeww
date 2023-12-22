@@ -1,0 +1,138 @@
+$background: rgba(50,10,9,0.8);
+$foreground: white;
+$accent: rgba(135,35,65,0.8);
+$bright-accent: rgba(240, 89, 65, 0.8);
+$text:rgb(255, 211, 176); 
+$minPadding: 20px;
+$borderRadius: 10px;
+
+* {
+    all:unset;
+    font-family: iosevka regular;
+}
+
+.bar{
+    background-color: $background; 
+    border-bottom: solid 2px $accent;
+}
+
+.bar button{
+    padding: 0 $minPadding;
+}
+
+box{
+    color: $text;
+}
+
+.music .note{
+    font-size:24pt;
+    padding-top:6px;
+}
+
+.external{
+    background-color: $background; 
+    border: 2px solid $accent;
+    border-radius: $borderRadius;
+}
+
+.border{
+    border: 2px solid $accent;
+    border-radius: $borderRadius;
+}
+
+.pad{
+    padding: $minPadding;
+}
+
+button:hover{
+    background-color: rgba(135,35,65,0.8);
+}
+
+slider{
+    background-color:$accent;
+}
+
+trough highlight {
+  all: unset;
+  background-color: $bright-accent;
+  color: #000000;
+}
+
+trough {
+  all: unset;
+  border:solid 1px #BE3144;
+  border-radius: 3px;
+  min-height: 10px;
+  min-width: 300px;
+}
+
+.icon{
+    font-size: 18pt;
+}
+
+.batteryInfo, .mainAudio .text{
+    font-size: 14pt;
+}
+
+
+.musicControls{
+    border-top:none;
+    border-radius: 0 0 $borderRadius $borderRadius;
+}
+
+.musicControls .image{
+    border-radius: 10px;
+    margin: $minPadding;
+    min-width: 390px;
+    min-height: 390px;
+    background-size:cover;
+    background-color: $accent;
+}
+
+.musicControls button{
+    border-top: solid 2px $accent;
+    font-size:20pt;
+    padding: 10px;
+}
+
+.musicControls .topBox{
+    padding: $minPadding $minPadding;
+}
+
+.musicControls .middle{
+    border-right: solid 2px $accent;
+    border-left: solid 2px $accent;
+}
+
+.musicSlider trough {
+  min-height: 10px;
+  min-width: 300px;
+}
+
+.musicControls .slider{
+    padding: 0 10px;
+}
+.mainAudio button{
+    padding: 0;
+}
+
+.topRight{
+    border-top: none;
+    border-right: none;
+    border-radius: 0 0 0 $borderRadius;
+}
+
+.topLeft{
+    border-top: none;
+    border-left: none;
+    border-radius: 0 0 $borderRadius 0;
+}
+
+
+.audioList button{
+    padding: 0 $minPadding
+}
+
+.audioList .active{
+    background-color: $accent;
+}

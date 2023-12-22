@@ -1,0 +1,5 @@
+#! /usr/bin/bash
+echo $1
+volumeSet=$(bc -l <<<"scale=2;$1/100")
+`wpctl set-volume @DEFAULT_AUDIO_SINK@ ${volumeSet}`
+echo ${volumeSet}

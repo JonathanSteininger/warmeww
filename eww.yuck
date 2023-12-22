@@ -1,0 +1,284 @@
+
+
+; VARIABLES ===================================================
+
+(defpoll audioMuted :interval "1s"
+  :initial `scripts/checkMuted`
+  `scripts/checkMuted`)
+
+(defpoll volume :interval "1s"
+  `scripts/volume`)
+
+(defpoll audioDevices :interval "5s"
+  `scripts/getAudioDevices all`)
+
+(defpoll battery :interval "5s"
+  :initial `scripts/battery amount`
+  `scripts/battery amount`)
+
+(defpoll charging :interval "5s"
+  :initial `scripts/battery charging`
+  `scripts/battery charging`)
+
+(defpoll batteryTime :interval "5s"
+  :initial `scripts/battery time`
+  `scripts/battery time`)
+
+(defpoll batteryLong :interval "5s"
+  :initial `acpi`
+  `acpi`)
+
+(defpoll time :interval "1s"
+  :initial "00:00 am"  ; optional, defaults to poll at startup
+  `date +"%l:%M %p"`)
+
+(defpoll date :interval "1m"
+  :initial `date +"%A %D"`  ; optional, defaults to poll at startup
+  `date +"%A %D"`)
+
+
+(deflisten music :initial "Nothing Playing"
+  "playerctl --follow -p spotify metadata --format '{{ artist }} - {{ title }}' || true")
+
+(deflisten musicArt
+  :initial ""
+  `playerctl --follow -p spotify metadata --format '{{mpris:artUrl}}' | scripts/cacheSpotifyIcons`)
+
+(deflisten musicLength :interval "3s"
+  :initial 100
+  `playerctl --follow -p spotify metadata --format '{{mpris:length}}' | scripts/getSongLength`)
+(deflisten musicLengthText :interval "3s"
+  :initial 100
+  `playerctl --follow -p spotify metadata --format '{{duration(mpris:length)}}'`)
+(deflisten musicPosition 
+  :initial 0
+  `playerctl --follow -p spotify position`)
+(deflisten musicTimeDisplay 
+  :initial "0:00"
+  `playerctl --follow -p spotify position --format '{{duration(position)}}'`)
+(deflisten musicPlaying :interval "1s"
+  :initial "not"
+  `playerctl --follow -p spotify status`)
+
+
+
+; WIDGETS ===========================================
+
+
+
+; bar ----------------
+(defwidget bar []
+  (centerbox :class "bar" :orientation "h" :space-evenly false
+             (clock)
+             (musicSection)
+             (end))
+  )
+
+(defwidget clock []
+  (button :halign "start" 
+          :class "clock" 
+          :halign "start" 
+          :onclick "scripts/windowManager open datePopOut"
+          time)
+  )
+
+(defwidget musicSection []
+  (button :class "music" :onclick "scripts/windowManager open musicControls";
+          (box :orientatino "h" :interactable true :space-evenly false :spacing 10
+               (box :class "note"
+                    "♪")
+               (image :image-width: 40 :image-height 40 :path musicArt)
+               "${music}"
+               (box :class "note" 
+                    "♪")
+               ))
+  )
+
+
+
+(defwidget end []
+  (box :class "barRight" :orientation "h" :halign "end" :space-evenly false :spacing 0
+       (button :class "volume"
+               :onclick "scripts/windowManager open audioControls"
+               (box :spacing 5
+                    (box :class "text" 
+                         "${volume}%")
+                    (box :class "icon" 
+                         "${audioMuted ? "󰝟" : (volume < 60 ? (volume > 0 ? "󰖀" : "󰕿") : "󰕾 ")}")
+                    )
+               )
+       (button :class "battery"
+              :onclick "scripts/windowManager open batteryInfo"
+               (box :space-evenly false :spacing 10
+                 (box :class "text"
+                      "${batteryTime}"
+                 )
+                 (box :class "icon"
+                   "${charging == "true" ? (battery > 95 ? "󱟢" : "󰂄") : ( battery > 95 ? "󰁹" :( battery > 90 ? "󰂂" : ( battery > 80 ? "󰂁" :( battery > 70 ? "󰂀" :( battery > 60 ? "󰁿" :( battery > 50 ? "󰁾" :( battery > 40 ? "󰁽" :( battery > 30 ? "󰁼" :( battery > 20 ? "󰁻" : ( battery > 10 ? "󰁺" : "󱃍"))))))))))}"
+                      )
+               )
+       )
+
+       )
+  )
+
+; popOuts --------------------------------------
+
+(defwidget dateBox []
+  (box :class "external pad topLeft" :orientation "v"
+       date
+       ))
+
+
+
+
+
+(defvar test '["2", [3,5]]')
+
+(defwidget audioControls []
+  (box :class "external pad audioControls topRight" :orientation "v"
+       (box :class "mainAudio" :orientation "h" :space-evenly false :spacing 10
+            (button :style "font-size: 18pt; padding-right:20px"
+                    :onclick "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
+                    "${audioMuted == "true" ? "󰝟" : volume < 60 ? (volume > 0 ? "󰖀" : "󰕿") : "󰕾"}")
+            (scale :min 0
+                   :max 101
+                   :active true
+                   :value volume
+                   :onchange "scripts/setvolume {}; eww update volume=`scripts/volume`") ; sets volume and updates volume variable
+            (box :class "text"
+                 "${volume}%")
+            )
+       (box :class "audioList border" :orientation "v"
+            (for device in audioDevices
+                 (button :onclick "wpctl set-default ${device[1]}; eww update audioDevices=\"`scripts/getAudioDevices all`\"" :class "${device[0] ? "active" : ""}"
+                         (box :space-evenly false :spacing 20
+                              (box :class "icon"
+                                   "󰋋")
+                              (box :class "text"
+                                   "${device[2]}"
+                                   )
+                              )
+                         )
+                 )
+            )
+ ))
+
+(defwidget batteryInfo []
+  (box :class "external pad batteryInfo topRight" :orientation "h" :space-evenly false :spacing 10
+       (scale :min 0 ; sets volume and updates volume variable
+              :max 101
+              :active false
+              :value battery
+              :onchange ""
+              )
+       "${battery}%"
+       )
+  )
+
+
+(defwidget musicControls []
+  (box :class "external musicControls" :orientation "v" :space-evenly false
+       (box :class "image" :orientation "h" :style "background-image: url('${musicArt}');")
+       (centerbox :class "topBox" :orientation "h" :space-evenly false
+                  (box :class "time" :halign "end" 
+                       musicTimeDisplay)
+                  (box :class "slider"
+                       (scale :class "musicSlider" 
+                              :halign "center"
+                              :min 0
+                              :max musicLength
+                              :active true
+                              :value musicPosition
+                              :onchange "playerctl -p spotify position {}")
+                       )
+                  (box :class "time" :halign "start" 
+                       musicLengthText)
+                  )
+       (box :orientation "h"
+            (button :onclick "playerctl -p spotify previous"
+                    "󰒮")
+            (button :class "middle"
+                    :onclick "playerctl -p spotify play-pause"
+                    {musicPlaying == "Playing" ? "󰏤" : ""})
+            (button :onclick "playerctl -p spotify next"
+                    "󰒭")
+            )
+       ))
+
+
+; WINDOWS =========================================================
+(defwindow bartop
+  :monitor 0
+  :geometry (geometry :x "0%"
+                      :y "0px"
+                      :width "100%"
+                      :height "30px"
+                      :anchor "top center")
+  :stacking "fg"
+  :exclusive true
+  :wm-ignore false
+  (bar)
+  )
+(defwindow datePopOut
+  :monitor 0
+  :geometry (geometry :x "0%"
+                      :y "0%"
+                      :width "20%"
+                      :height "10px"
+                      :anchor "top left")
+  :stacking "overlay"
+  :exclusive false
+  :wm-ignore false
+  (dateBox)
+  )
+(defwindow musicControls
+  :monitor 0
+  :geometry (geometry :x "0%"
+                      :y "0px"
+                      :width "400px"
+                      :height "150px"
+                      :anchor "top center")
+  :stacking "overlay"
+  :exclusive false
+  :wm-ignore false
+  (musicControls)
+  )
+
+(defwindow audioControls
+  :monitor 0
+  :geometry (geometry :x "0%"
+                      :y "0px"
+                      :width "300px"
+                      :height "10px"
+                      :anchor "top right")
+  :stacking "overlay"
+  :exclusive false
+  :wm-ignore false
+  (audioControls)
+  )
+(defwindow batteryInfo
+  :monitor 0
+  :geometry (geometry :x "0%"
+                      :y "0px"
+                      :width "300px"
+                      :height "10px"
+                      :anchor "top right")
+  :stacking "overlay"
+  :exclusive false
+  :wm-ignore false
+  (batteryInfo)
+  )
+
+
+
+; closer
+(defwidget closerCover []
+  (eventbox :onclick "scripts/windowManager close"))
+(defwindow windowCloser
+  :monitor 0
+  :geometry (geometry :width "100%" :height "100%")
+  :stacking "fg"
+  :focusable false
+  (closerCover)
+  )

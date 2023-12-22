@@ -1,0 +1,56 @@
+#! /usr/bin/bash
+
+#gets battery info
+batteryInfo="$(acpi)"
+
+
+printHelp () {
+    echo "
+Usage: battery [COMMAND]
+
+Commands:
+    amount - returns the battery charge from "0" to "100"
+    charging - returns true if the battery is charging. 
+    details - returns the full details of the battery.
+    time - prints time remaining to charge or till depleted.
+"
+}
+
+printAmount () {
+    temp=$(awk '{ print $4 }' <<< "$batteryInfo" | tr -d "[%,]")
+    echo $temp
+}
+
+printCharging () {
+    chargingColumn="$(awk '{ print $3 }' <<< "$batteryInfo" )"
+    if test "$chargingColumn" == "Charging,"; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+printDetails () {
+    echo "$batteryInfo"
+}
+
+printTime () {
+    time=$(awk '{ print $5 }' <<< "$batteryInfo")
+    echo $time
+}
+
+if test "$1" == ""; then
+    printHelp
+elif test "$1" == "help"; then
+    printHelp
+elif test "$1" == "amount"; then
+    printAmount
+elif test "$1" == "charging"; then
+    printCharging
+elif test "$1" == "details"; then
+    printDetails
+elif test "$1" == "time"; then
+    printTime
+else
+    printHelp
+fi

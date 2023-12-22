@@ -1,0 +1,9 @@
+#! /usr/bin/bash
+mutedColumn=`wpctl get-volume @DEFAULT_AUDIO_SINK@`
+MULTIPLIER=100
+mutedColumn=$(awk '{print $3}' <<< "${mutedColumn}")
+if test "$mutedColumn" == ""; then
+    echo false
+    exit 0
+fi
+echo true
