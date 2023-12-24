@@ -1,18 +1,18 @@
 #! /usr/bin/bash
 
-commandIn=$1
-inputIn=$2
+commandIn="$1"
+inputIn="$2"
 
 openWindowPath="/home/aureus/.config/eww/scripts/states/openWindow"
 
-getOpenWindow=`head $openWindowPath`
+getOpenWindow=`head -n 1 "$openWindowPath"`
 
 #functions
 
 closeWindow () {
-    eww close windowCloser
+    eww close windowCloser > /dev/null
     if test "$getOpenWindow" != ""; then
-        eww close $getOpenWindow
+        eww close $getOpenWindow > /dev/null
         echo "" > $openWindowPath
     fi
 }
@@ -22,9 +22,9 @@ openWindow () {
         closeWindow
     else
         closeWindow
-        eww open windowCloser
-        eww open $1
         echo "$1" > $openWindowPath
+        eww open "$1" > /dev/null
+        eww open windowCloser > /dev/null
     fi
 }
 
