@@ -28,6 +28,9 @@
   :initial `acpi`
   `acpi`)
 
+(defpoll workspaces :interval "5s"
+  `hyprctl workspaces -j | jq "map(select(.monitorID == 0)) | sort_by(.monitorID, .id)"`)
+
 (defpoll time :interval "1s"
   :initial "00:00 am"  ; optional, defaults to poll at startup
   `date +"%l:%M %p"`)
@@ -69,21 +72,32 @@
 ; bar ----------------
 (defwidget bar []
   (centerbox :class "bar" :orientation "h" :space-evenly false
-             (clock)
+             (start)
              (musicSection)
              (end))
   )
+(defwidget start []
+  (box :class "start" :halign "start" :space-evenly false 
+       (clock)
+       (for workspace in workspaces
+            (button :class "workspace" :onclick "hyprctl dispatch workspace ${workspace.id} &"
+                    (box :space-evenly false
+                         "${workspace.name}"
+                         )
+                    )
+            )
+       ))
 
 (defwidget clock []
   (button :halign "start" 
           :class "clock" 
           :halign "start" 
-          :onclick "scripts/windowManager open datePopOut"
+          :onclick "scripts/windowManager open datePopOut &"
           time)
   )
 
 (defwidget musicSection []
-  (button :class "music" :onclick "scripts/windowManager open musicControls";
+  (button :class "music" :onclick "scripts/windowManager open musicControls &";
           (box :orientatino "h" :interactable true :space-evenly false :spacing 10
                (box :class "note"
                     "♪")
@@ -97,9 +111,34 @@
 
 
 (defwidget end []
-  (box :class "barRight" :orientation "h" :halign "end" :space-evenly false :spacing 0
+  (box :class "end" :orientation "h" :halign "end" :space-evenly false :spacing 0
+       (button :class "performance"
+               :onclick "scripts/windowManager open computerStats"
+               (box :spacing 0
+                    (box :class "icon" 
+                         "")
+                    (box :class "barContainer" :spacing 0 :space-evenly false :orientation "v" :valign "center"
+                         (scale :class "scale"
+                                :tooltip "Memory"
+                                :min 0
+                                :max 101
+                                :value "${EWW_RAM.used_mem_perc}"
+                                :active false
+                                :onchange ""
+                                )
+                         (scale :class "scale"
+                                :tooltip "Avarage CPU Usage"
+                                :min 0
+                                :max 101
+                                :value "${EWW_CPU.avg}"
+                                :active false
+                                :onchange ""
+                                )
+                         )
+                    )
+               )
        (button :class "volume"
-               :onclick "scripts/windowManager open audioControls"
+               :onclick "scripts/windowManager open audioControls &"
                (box :spacing 5
                     (box :class "text" 
                          "${volume}%")
@@ -108,7 +147,7 @@
                     )
                )
        (button :class "battery"
-              :onclick "scripts/windowManager open batteryInfo"
+              :onclick "scripts/windowManager open batteryInfo &"
                (box :space-evenly false :spacing 10
                  (box :class "text"
                       "${batteryTime}"
@@ -131,15 +170,59 @@
 
 
 
+(defwidget computerStats []
+  (box :class "computerStats external topRight" :orientation "v" :space-evenly false :style "padding: 20px;" :spacing 20
+       (box :class "cpu" :orientation "v" :space-evenly false :spacing 5
+            "CPU"
+            (centerbox :class "average" :orientation "h"
+                       "Avg."
+                       (scale :min 0
+                              :max 101
+                              :active false
+                              :value "${EWW_CPU.avg}"
+                              :onchange ""
+                              )
+                       (box :halign "end"
+                            "${round(EWW_CPU.avg, 1)} %"
+                            )
+                       )
+            (for core in "${EWW_CPU.cores}"
+                 (centerbox :orientation "h"
+                            "${core.core}"
+                            (scale :min 0
+                                   :max 101
+                                   :active false
+                                   :value "${core.usage}"
+                                   :onchange ""
+                                   )
+                            (box :halign "end"
+                                 "${core.freq} Mhz"
+                                 )
+                            )
+                 )
+            )
+       (box :class "memory" :orientation "v" :spacing 5
+            "Memory"
+            (centerbox :orientation "h" 
+                       "${round(EWW_RAM.used_mem / 1000000000, 2)} Gb"
+                       (scale :min 0
+                              :max 101
+                              :active false
+                              :value "${EWW_RAM.used_mem_perc}"
+                              :onchange ""
+                              )
+                       "${round(EWW_RAM.total_mem / 1000000000, 2)} Gb"
+                       )
+            )
 
+       ))
 
-(defvar test '["2", [3,5]]')
 
 (defwidget audioControls []
   (box :class "external pad audioControls topRight" :orientation "v"
        (box :class "mainAudio" :orientation "h" :space-evenly false :spacing 10
             (button :style "font-size: 18pt; padding-right:20px"
-                    :onclick "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
+                    :onclick "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle &"
                     "${audioMuted == "true" ? "󰝟" : volume < 60 ? (volume > 0 ? "󰖀" : "󰕿") : "󰕾"}")
             (scale :min 0
                    :max 101
@@ -196,12 +279,12 @@
                        musicLengthText)
                   )
        (box :orientation "h"
-            (button :onclick "playerctl -p spotify previous"
+            (button :onclick "playerctl -p spotify previous &"
                     "󰒮")
             (button :class "middle"
-                    :onclick "playerctl -p spotify play-pause"
+                    :onclick "playerctl -p spotify play-pause &"
                     {musicPlaying == "Playing" ? "󰏤" : ""})
-            (button :onclick "playerctl -p spotify next"
+            (button :onclick "playerctl -p spotify next &"
                     "󰒭")
             )
        ))
@@ -270,11 +353,24 @@
   (batteryInfo)
   )
 
+(defwindow computerStats
+  :monitor 0
+  :geometry (geometry :x "0%"
+                      :y "0px"
+                      :width "450px"
+                      :height "10px"
+                      :anchor "top right")
+  :stacking "overlay"
+  :exclusive false
+  :wm-ignore false
+  (computerStats)
+  )
+
 
 
 ; closer
 (defwidget closerCover []
-  (eventbox :onclick "scripts/windowManager close"))
+  (eventbox :onclick "scripts/windowManager close &"))
 (defwindow windowCloser
   :monitor 0
   :geometry (geometry :width "100%" :height "100%")

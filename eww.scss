@@ -136,3 +136,23 @@ trough {
 .audioList .active{
     background-color: $accent;
 }
+.end .performance .scale trough {
+    min-width: 50px;
+    border-radius: 0;
+    border: solid 2px $background;
+    padding: 0;
+}
+.end .performance .scale trough highlight {
+    background-color: $accent;
+}
+.end .performance .barContainer {
+    border: solid 2px $accent;
+    background-color: $background;
+}
+.computerStats trough{
+    min-width: 250px;
+    border-radius: 0;
+}
+.computerStats .average{
+    padding-bottom: 10px;
+}
