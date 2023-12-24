@@ -18,6 +18,8 @@ $borderRadius: 10px;
 
 .bar button{
     padding: 0 $minPadding;
+    border-left: 1px solid $accent;
+    border-right: 1px solid $accent;
 }
 
 box{

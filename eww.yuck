@@ -1,4 +1,6 @@
 
+; Device names that you need to set 
+
 
 ; VARIABLES ===================================================
 
@@ -39,6 +41,19 @@
   :initial `date +"%A %D"`  ; optional, defaults to poll at startup
   `date +"%A %D"`)
 
+(defpoll brightnessKbd :interval "5s"
+  :initial `brightnessctl -d $KEYBOARD_BACKLIGHT g`
+  `brightnessctl -d $KEYBOARD_BACKLIGHT g`)
+(defpoll brightnessMon :interval "5s"
+  :initial `brightnessctl -d $MONITOR_BACKLIGHT g`
+  `brightnessctl -d $MONITOR_BACKLIGHT g`)
+
+(defpoll brightnessKbdMax :interval "5h"
+    :initial `brightnessctl -d $KEYBOARD_BACKLIGHT m`
+  `brightnessctl -d $KEYBOARD_BACKLIGHT m`)
+(defpoll brightnessMonMax :interval "5h"
+    :initial `brightnessctl -d $MONITOR_BACKLIGHT m`
+  `brightnessctl -d $MONITOR_BACKLIGHT m`)
 
 (deflisten music :initial "Nothing Playing"
   "playerctl --follow -p spotify metadata --format '{{ artist }} - {{ title }}' || true")
@@ -112,11 +127,16 @@
 
 (defwidget end []
   (box :class "end" :orientation "h" :halign "end" :space-evenly false :spacing 0
+       (button :class "brightness" :onclick "scripts/windowManager open brightnessControls"
+               (box :class "icon"
+                    " "
+                    )
+               )
        (button :class "performance"
                :onclick "scripts/windowManager open computerStats"
-               (box :spacing 0
+               (box :space-evenly false
                     (box :class "icon" 
-                         "")
+                         "  ")
                     (box :class "barContainer" :spacing 0 :space-evenly false :orientation "v" :valign "center"
                          (scale :class "scale"
                                 :tooltip "Memory"
@@ -168,6 +188,35 @@
        date
        ))
 
+;
+(defwidget brightnessControls []
+  (box :class "brightnessControls external topRight pad" :orientation "v" :space-evenly false :spacing 30
+       (box :orientation "v" :space-evenly false :spacing 10
+            "Monitor"
+            (box :orientation "h" :space-evenly false :spacing 10
+                 "${round(brightnessMon / brightnessMonMax * 100, 1)} %"
+                 (scale :min 0
+                         :max brightnessMonMax
+                         :value brightnessMon
+                         :active true
+                         :onchange "brightnessctl -d $MONITOR_BACKLIGHT s {}; eww update brightnessMon={}"
+                         )
+             )
+        )
+       (box :orientation "v" :space-evenly false :spacing 10
+            "Keyboard"
+            (box :orientation "h" :space-evenly false :spacing 10
+                 "${round(brightnessKbd / brightnessKbdMax * 100, 1)} %"
+                 (scale :min 0
+                         :max brightnessKbdMax
+                         :value brightnessKbd
+                         :active true
+                         :onchange "brightnessctl -d $KEYBOARD_BACKLIGHT s {}; eww update brightnessKbd={}"
+                         )
+             )
+        )
+
+  ))
 
 
 (defwidget computerStats []
@@ -366,6 +415,18 @@
   (computerStats)
   )
 
+(defwindow brightnessControls
+  :monitor 0
+  :geometry (geometry :x "0%"
+                      :y "0px"
+                      :width "300px"
+                      :height "10px"
+                      :anchor "top right")
+  :stacking "overlay"
+  :exclusive false
+  :wm-ignore false
+  (brightnessControls)
+  )
 
 
 ; closer
