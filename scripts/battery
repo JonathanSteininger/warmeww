@@ -25,6 +25,8 @@ printCharging () {
     chargingColumn="$(awk '{ print $3 }' <<< "$batteryInfo" )"
     if test "$chargingColumn" == "Charging,"; then
         echo "true"
+    elif test "$chargingColumn" == "Full,"; then
+        echo "true"
     else
         echo "false"
     fi
