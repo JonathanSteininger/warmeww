@@ -22,6 +22,10 @@
   :initial `scripts/battery charging`
   `scripts/battery charging`)
 
+(defpoll processes :interval "1s"
+  :initial `ps Tk "-pcpu" --deselect -o "pid:7,comm:18,pcpu:5,pmem:6" | head | tr "%" " " | sed "s/./%/34" | awk '{ print $0 " %" }'`
+  `ps Tk "-pcpu" --deselect -o "pid:7,comm:18,pcpu:5,pmem:6" | head | tr "%" " " | sed "s/./%/34" | awk '{ print $0 " %" }'`)
+
 (defpoll batteryTime :interval "5s"
   :initial `scripts/battery time`
   `scripts/battery time`)
@@ -262,6 +266,9 @@
                               )
                        "${round(EWW_RAM.total_mem / 1000000000, 2)} Gb"
                        )
+            )
+       (box :class "processes pad"
+            "${processes}"
             )
 
        ))

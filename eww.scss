@@ -1,5 +1,6 @@
 $background: rgba(50,10,9,0.8);
 $foreground: white;
+$dark: rgba(13,15,1,0.8);
 $accent: rgba(135,35,65,0.8);
 $bright-accent: rgba(240, 89, 65, 0.8);
 $text:rgb(255, 211, 176); 
@@ -8,6 +9,8 @@ $borderRadius: 10px;
 
 * {
     all:unset;
+}
+box {
     font-family: iosevka regular;
 }
 
@@ -157,4 +160,9 @@ trough {
 }
 .computerStats .average{
     padding-bottom: 10px;
+}
+
+.processes{
+    font-family: Hack;
+    background-color: $dark;
 }
