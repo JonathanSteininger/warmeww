@@ -1,0 +1,165 @@
+#! /usr/bin/bash
+
+# this will get the total network download and upload in mbps. output: json
+#
+
+networkStateLocation="$HOME/.config/eww/scripts/states/network"
+networkTrackingLocation="$HOME/.config/eww/scripts/states/networkHistory"
+#cache total download an upload. compare to last total upload/download. return difference = total over time.
+
+printHelp () {
+    echo "
+Usage: network [COMMAND] [?INTERFACE]
+
+commands:
+    help - prints help menu
+    interfaces - prints a json string of all interfaces
+    upload [INTERFACE] - prints upload of interface in Mbps
+    download [INTERFACE] - prints download of interface in Mbps
+
+Interface:
+    all - prints the total average of all interfaces
+    interface name - print the average of the named interface
+    "
+}
+
+formatInterfaceJSON () {
+    local interface="$1"
+    local download="$2"
+    local upload="$3"
+    echo "\"${interface}\":{\"download\":${download},\"upload\":${upload}}"
+}
+
+getInterfacesLines () {
+    echo "$(ifstat -j | jq '.kernel | keys[]' | tr -d "\"")"
+}
+
+getInterfacesJSON () {
+    echo "$(ifstat -j | jq '.kernel | keys')"
+}
+
+getInterfacesTotal () {
+    local totalUp=0
+    local totalDown=0
+    local output=""
+    local flag=true
+    while read interface; do
+        local upload=$(ifstat -j | jq ".kernel.${interface}.tx_bytes")
+        totalUp=$(bc <<< "$upload + $totalUp")
+        local download=$(ifstat -j | jq ".kernel.${interface}.rx_bytes")
+        totalDown=$(bc <<< "$download + $totalDown")
+        if $flag; then
+            output=",$(formatInterfaceJSON "$interface" "$download" "$upload")"
+        else
+            output="${output},$(formatInterfaceJSON "$interface" "$download" "$upload")"
+        fi
+        flag=false;
+    done <<< "$(getInterfacesLines)"
+    output="{$(formatInterfaceJSON "all" $totalUp $totalDown)${output}}"
+    echo "$output"
+}
+
+
+
+printAll () {
+    local now=$(getInterfacesTotal)
+    local past=$(cat "$networkStateLocation")
+    local output=""
+    local flag=true
+    while read interface; do
+        local uploadDiff=$(bc <<< "$(jq ".${interface}.upload" <<< "$now") - $(jq ".${interface}.upload" <<< "$past")")
+        local downloadDiff=$(bc <<< "$(jq ".${interface}.download" <<< "$now") - $(jq ".${interface}.download" <<< "$past")")
+        if $flag; then
+            output="$(formatInterfaceJSON "$interface" "$downloadDiff" "$uploadDiff")"
+        else
+            output="${output},$(formatInterfaceJSON "$interface" "$downloadDiff" "$uploadDiff")"
+        fi
+        flag=false;
+    done <<< "$(getInterfacesLines)"$'\n'"all"
+    local output="{${output}}"
+    echo $output
+}
+
+trackingDistance=20
+
+getHeadTrackingJSONLines () {
+    head -n "$trackingDistance" "$networkTrackingLocation"
+}
+
+saveTrackingJSON () {
+    local flag=true
+    echo -e "$1" | jq -c ".[]" | while read line; do
+        if $flag; then
+            echo "$line" > "$networkTrackingLocation"
+        else
+            echo "$line" >> "$networkTrackingLocation"
+        fi
+        flag=false
+    done
+}
+
+
+getUpdatedTrackingJSON () {
+    local olderStuff=$(getHeadTrackingJSONLines)
+    local output=$(printAll)
+    while read line; do
+        if test "$line" != ""; then
+            output="${output},$line"
+        fi
+    done <<< "$(echo -e "$olderStuff")"
+    local output="[${output}]"
+    echo "$output"
+}
+
+saveState () {
+    saveTrackingJSON "$(getUpdatedTrackingJSON)"
+    echo "$(getInterfacesTotal)" > $networkStateLocation
+}
+
+getBiggestJSON () {
+    local history=$1
+    local jsonInsert="\"all\":0"
+    local flag=true
+    #formats the jsonInsert
+    while read line; do
+            jsonInsert="${jsonInsert},\"${line}\":0"
+    done <<< "$(getInterfacesLines)"
+    local jsonInsert="{${jsonInsert}}"
+
+    #go through each history node
+    while read node; do
+        #goes through each interface in node
+        while read interface; do
+            local currentValue=$(jq ".${interface}" <<< "$jsonInsert")
+            local biggest=$(jq ".${interface} | map(.) | max" <<< "$node")
+            if (( $biggest > $currentValue )); then
+                jsonInsert=$(jq -c ".${interface} = ${biggest}" <<< "$jsonInsert")
+            fi
+        done <<< "$(jq -c "keys[]" <<< "$node" | tr -d "\"")"
+    done <<< "$(jq -c '.[]' <<< "$history")"
+    echo "$jsonInsert"
+}
+
+if test "$1" == "all"; then
+    printAll
+    saveState
+elif test "$1" == "tracking"; then
+    getUpdatedTrackingJSON
+elif test "$1" == "tracking2"; then
+    output=$(getUpdatedTrackingJSON)
+    saveState
+    biggestJSON=$(getBiggestJSON "$output")
+    output="[]";
+    output=$(jq -c '[.[0], .[1][]]' <<< "[${biggestJSON},${output}]")
+    echo "$output"
+elif test "$1" == "save"; then
+    saveState
+elif test "$1" == "interfaces"; then
+    getInterfacesJSON
+elif test "$1" == "help"; then
+    printHelp
+elif test "$1" == ""; then
+    printHelp
+else
+    printHelp
+fi
