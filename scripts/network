@@ -149,7 +149,6 @@ elif test "$1" == "tracking2"; then
     output=$(getUpdatedTrackingJSON)
     saveState
     biggestJSON=$(getBiggestJSON "$output")
-    output="[]";
     output=$(jq -c '[.[0], .[1][]]' <<< "[${biggestJSON},${output}]")
     echo "$output"
 elif test "$1" == "save"; then
