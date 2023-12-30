@@ -16,7 +16,8 @@ box {
 
 .bar{
     background-color: $background; 
-    border-bottom: solid 2px $accent;
+/*    border-bottom: solid 2px $accent;
+*/
 }
 
 .bar button{
@@ -165,4 +166,12 @@ trough {
 .processes{
     font-family: Hack;
     background-color: $dark;
+}
+
+.graph{
+    background-color: blue;
+}
+
+.graph scale trough{
+    min-width: 5px;
 }

@@ -14,6 +14,13 @@
 (defpoll audioDevices :interval "5s"
   `scripts/getAudioDevices all`)
 
+(defpoll networkTracking :interval "1s"
+  :initial `scripts/network tracking2 &`
+  `scripts/network tracking2 &`)
+
+(defpoll networkInterfaces :interval "10s"
+  `scripts/network interfaces`)
+
 (defpoll battery :interval "5s"
   :initial `scripts/battery amount`
   `scripts/battery amount`)
@@ -39,7 +46,7 @@
 
 (defpoll time :interval "1s"
   :initial "00:00 am"  ; optional, defaults to poll at startup
-  `date +"%l:%M %p"`)
+  `date +"%l:%M:%S %p"`)
 
 (defpoll date :interval "1m"
   :initial `date +"%A %D"`  ; optional, defaults to poll at startup
@@ -136,6 +143,18 @@
                     " "
                     )
                )
+       (button :class "network" :onclick "scripts/windowManager open networkStats"
+               (box :orientation "v" :width 70 
+                    (box :orientation "h" :space-evenly false :spacing 5 :halign "center"
+                               "${round(networkTracking[1].all.upload/ 1000000, 3)} Mbps"
+                               "󰁞"
+                     )
+                    (box :orientation "h" :space-evenly false :spacing 5 :halign "center"
+                               "${round(networkTracking[1].all.download / 1000000, 3)} Mbps"
+                              "󰁆"
+                     )
+                 )
+               )
        (button :class "performance"
                :onclick "scripts/windowManager open computerStats"
                (box :space-evenly false
@@ -192,7 +211,39 @@
        date
        ))
 
-;
+(defvar count "[21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1]"
+  )
+(defwidget networkStats []
+  (box :class "computerStats external topRight" :orientation "v" :space-evenly false :style "padding: 20px;" :spacing 20
+       "${networkTracking[0]}"
+       (for interface in networkInterfaces
+            (box :space-evenly false
+                 (centerbox :class "networkStat"
+                            "interface: ${interface}"
+                            " "
+                            " "
+                            )
+                 (box :class "graph" :orientation "h" :height 50 :width 100 :space-evenly false :spacing 1
+                    (for num in count
+                           (overlay
+                             (box :orientation "v" :space-evenly false :valign "end"
+                                  (box :height {round(50 * (((networkTracking[num]["${interface}"].download + networkTracking[num == 21 ? num : num + 1]["${interface}"].download)/2) / (networkTracking[0]["${interface}"] + 1)), 0)}
+                                       :width 0 
+                                       :style "border-right: solid 4px red; padding-left: 4px"
+                                       )
+                                  )
+                             (box :orientation "v" :space-evenly false :valign "end"
+                                  (box :height {round(50 * (((networkTracking[num]["${interface}"].upload + networkTracking[num == 21 ? num : num + 1]["${interface}"].upload)/2) / (networkTracking[0]["${interface}"] + 1)), 0)}
+                                       :width 0 
+                                       :style "border-left: solid 4px yellow; padding-right: 4px"
+                                       )
+                                  )
+                             )
+                           )
+                      )
+                 )
+            )
+       ))
 (defwidget brightnessControls []
   (box :class "brightnessControls external topRight pad" :orientation "v" :space-evenly false :spacing 30
        (box :orientation "v" :space-evenly false :spacing 10
@@ -420,6 +471,19 @@
   :exclusive false
   :wm-ignore false
   (computerStats)
+  )
+
+(defwindow networkStats
+  :monitor 0
+  :geometry (geometry :x "0%"
+                      :y "0px"
+                      :width "450px"
+                      :height "10px"
+                      :anchor "top right")
+  :stacking "overlay"
+  :exclusive false
+  :wm-ignore false
+  (networkStats)
   )
 
 (defwindow brightnessControls
