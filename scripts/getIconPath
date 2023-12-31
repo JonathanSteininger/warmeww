@@ -7,6 +7,9 @@ fi
 comm=$(ps --noheader -q "$pid" -o comm=)
 exe=$(ps --noheader -q "$pid" -o exe=)
 
+commParent=$(ps --noheader -q $(ps --noheader -q "$pid" -o ppid=) -o comm=)
+exeParent=$(ps --noheader -q $(ps --noheader -q "$pid" -o ppid=) -o exe=)
+
 mainCatagory=( "arcticons-dark" )
 
 attempts=(  "128x128"
@@ -75,17 +78,41 @@ filePath=$(getFilePath "$comm")
 if test "$filePath" != ""; then
     iconName=$(getIconPath "$filePath")
 else
-filePath=$(getFilePath "$exe")
+    filePath=$(getFilePath "$exe")
     if test "$filePath" != ""; then
         iconName=$(getIconPath "$filePath")
-    else
-        exit 0
     fi
 fi
 
-allIconPaths=$(getIconPaths "$iconName")
-if test "$allIconPaths" == ""; then
+if test "$iconName" != ""; then
+    allIconPaths=$(getIconPaths "$iconName")
+fi
+if test "$allIconPaths" != ""; then
+    output=$(findBestFit "$allIconPaths")
+fi
+if test "$output" != ""; then
+    echo "$output"
     exit 0
 fi
 
-findBestFit "$allIconPaths"
+# second run with parrent comm
+filePath=$(getFilePath "$commParent")
+if test "$filePath" != ""; then
+    iconName=$(getIconPath "$filePath")
+else
+    filePath=$(getFilePath "$exeParent")
+    if test "$filePath" != ""; then
+        iconName=$(getIconPath "$filePath")
+    fi
+fi
+
+if test "$iconName" != ""; then
+    allIconPaths=$(getIconPaths "$iconName")
+fi
+if test "$allIconPaths" != ""; then
+    output=$(findBestFit "$allIconPaths")
+fi
+if test "$output" != ""; then
+    echo "$output"
+    exit 0
+fi
