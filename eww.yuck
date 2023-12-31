@@ -42,7 +42,7 @@
   `acpi`)
 
 (defpoll workspaces :interval "5s"
-  `hyprctl workspaces -j | jq "map(select(.monitorID == 0)) | sort_by(.monitorID, .id)"`)
+  `scripts/getOpenWindowsJSON`)
 
 (defpoll time :interval "1s"
   :initial "00:00 am"  ; optional, defaults to poll at startup
@@ -106,9 +106,17 @@
   (box :class "start" :halign "start" :space-evenly false 
        (clock)
        (for workspace in workspaces
-            (button :class "workspace" :onclick "hyprctl dispatch workspace ${workspace.id} &"
-                    (box :space-evenly false
-                         "${workspace.name}"
+            (button :class "workspace" :onclick "hyprctl dispatch workspace ${workspace[0].id} &"
+                    (box :orientation "v" :space-evenly false
+                         (box :class "markers" :halign "center" :valign "start" :orientation "h" :space-evenly false :spacing 2
+                              (for app in workspace
+                                   (box :class "marker" :style "background-image: url('${app.icon}');"
+                                        )
+                                   )
+                              )
+                         (box :class "text" :space-evenly false :halign "center"
+                              "${replace(workspace[0].name, "special:", "")}"
+                              )
                          )
                     )
             )

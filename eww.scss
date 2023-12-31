@@ -32,6 +32,19 @@ box {
 box{
     color: $text;
 }
+.start .markers {
+    margin: 1px 5px;
+}
+.start .marker {
+    min-width: 20px;
+    min-height: 20px;
+    background-size: cover;
+    opacity: 0.5;
+}
+.workspace .text{
+    color: white;
+    opacity: 0.5;
+}
 
 .music .note{
     font-size:24pt;
@@ -192,11 +205,9 @@ $netDownColor: $accent;
 .graphContainer .graphBar{
     min-width: 8px;
 }
-
 .graphContainer .key{
     padding-right: 10px;
 }
-
 .graphContainer .uploadKey{
     color: $netUpColor;
 }
@@ -214,4 +225,3 @@ $netDownColor: $accent;
     padding-top: 5px;
     font-size: 14pt;
 }
-
