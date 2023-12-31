@@ -55,7 +55,7 @@ getInterfacesTotal () {
         fi
         flag=false;
     done <<< "$(getInterfacesLines)"
-    output="{$(formatInterfaceJSON "all" $totalUp $totalDown)${output}}"
+    output="{$(formatInterfaceJSON "all" $totalDown $totalUp)${output}}"
     echo "$output"
 }
 
