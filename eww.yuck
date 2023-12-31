@@ -213,38 +213,53 @@
 
 (defvar count "[21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1]"
   )
-(defwidget myGraphNetwork [data forEachLoopVar interface]
-  (box :class "graph" :orientation "h" :height 50 :width 100 :space-evenly false :spacing 1
-       (for num in forEachLoopVar
-            (overlay
-              (box :orientation "v" :space-evenly false :valign "end"
-                   (box :height {round(50 * (((data[num]["${interface}"].download + data[num == 21 ? num : num + 1]["${interface}"].download)/2) / (data[0]["${interface}"] + 1)), 0)}
-                        :width 0 
-                        :style "border-right: solid 4px red; padding-left: 4px"
-                        )
-                   )
-              (box :orientation "v" :space-evenly false :valign "end"
-                   (box :height {round(50 * (((data[num]["${interface}"].upload + data[num == 21 ? num : num + 1]["${interface}"].upload)/2) / (data[0]["${interface}"] + 1)), 0)}
-                        :width 0 
-                        :style "border-left: solid 4px yellow; padding-right: 4px"
-                        )
-                   )
-              )
+(defwidget myGraphNetwork [data forEachLoopVar interface barHeight]
+  (box :class "graphContainer" :space-evenly false :spacing 2
+       (box :class "info" :orientation "v"  :valign "center"
+            (box :halign "end" :class "key uploadKey"
+                 "󰁞")
+            (box :halign "end" :class "key downloadKey"
+                 "󰁆")
             )
+       (box :orientation "v" :space-evenly false
+            (box :class "graph" :orientation "h" :height barHeight :width 0 :space-evenly false 
+                 (for num in forEachLoopVar
+                      (box :orientation "h"
+                           (box :class "downloadContainer" :orientation "v" :space-evenly false :valign "end"
+                                (box :class "graphBar download" :height {round(barHeight * (((data[num]["${interface}"].download + data[num == 21 ? num : num + 1]["${interface}"].download)/2) / (data[0]["${interface}"] + 1)), 0)}
+                                     :width 1 
+                                     )
+                                )
+                           (box :class "uploadContainer" :orientation "v" :space-evenly false :valign "end"
+                                (box :class "graphBar upload" :height {round(barHeight * (((data[num]["${interface}"].upload + data[num == 21 ? num : num + 1]["${interface}"].upload)/2) / (data[0]["${interface}"] + 1)), 0)}
+                                     :width 1 
+                                     )
+                                )
+                           )
+                      )
+                 )
+            (box :class "interfaceName"
+                 "${interface == "all" ? "Total" : interface}"
+                 )
+            )
+       (box :halign "start" :valign "start" :class "max" 
+            "${round((data[0]["${interface}"] + 1)/ 1000, 2)} Kb")
        )
   )
 (defwidget networkStats []
   (box :class "computerStats external topRight" :orientation "v" :space-evenly false :style "padding: 20px;" :spacing 20
+       (box :space-evenly false :spacing 10 :halign "end"
+            (myGraphNetwork :data "${networkTracking}"
+                            :forEachLoopVar "${count}"
+                            :interface "all"
+                            :barHeight 100)
+            )
        (for interface in networkInterfaces
-            (box :space-evenly false
-                 (centerbox :class "networkStat"
-                            "interface: ${interface}"
-                            " "
-                            " "
-                            )
+            (box :space-evenly false :spacing 10 :halign "end"
                  (myGraphNetwork :data "${networkTracking}"
                                  :forEachLoopVar "${count}"
-                                 :interface "${interface}")
+                                 :interface "${interface}"
+                                 :barHeight 100)
                  )
             )
        ))
