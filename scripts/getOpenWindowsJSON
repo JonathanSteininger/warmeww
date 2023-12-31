@@ -1,0 +1,21 @@
+#! /usr/bin/bash
+input=$(hyprctl -j clients | jq -c 'map({id: .workspace.id, name: .workspace.name, pid: .pid})| map(select(.pid > 0)) | .[]')
+localPath="$HOME/.config/eww/scripts/"
+
+output=""
+flag=true
+while read -r JSONline; do
+    pid=$(jq '.pid' <<< "$JSONline")
+    path=$(~/.config/eww/scripts/getIconPath "$pid")
+    newJSONline=$(jq -c "{id: .id, name: .name, icon: \"$path\"}" <<< "$JSONline")
+
+    if $flag; then
+        output="$newJSONline"
+        flag=false
+    else
+        output="${output},$newJSONline"
+    fi
+done <<< "$input"
+output="[$output]"
+echo "$(jq -c 'group_by(.id)' <<< "$output")"
+

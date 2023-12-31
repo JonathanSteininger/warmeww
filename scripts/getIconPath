@@ -1,0 +1,91 @@
+#! /usr/bin/bash
+pid=$1
+
+if test "$pid" == "-1"; then 
+    exit 0
+fi
+comm=$(ps --noheader -q "$pid" -o comm=)
+exe=$(ps --noheader -q "$pid" -o exe=)
+
+mainCatagory=( "arcticons-dark" )
+
+attempts=(  "128x128"
+            "192x192"
+            "256x256"
+            "384x384"
+            "512x512"
+            "96x96"
+            "72x72"
+            "64x64"
+            "48x48"
+            "36x36"
+            "32x32"
+            "24x24"
+            "22x22"
+            "16x16"
+            "scalable"
+            "pixmaps"
+            "symbolic")
+
+findBestFit () {
+    local allPaths=$1
+    local output=$(grep -i "$attemptFindString" <<< "$allPaths")
+    output=""
+    for catagory in "${mainCatagory[@]}"; do
+        tempLines=$(grep "$catagory" <<< "$allPaths")
+        if test "$tempLines" != ""; then
+            allPaths=$tempLines
+            break
+        fi
+    done
+    for attempt in "${attempts[@]}"; do
+        output=$(grep "${attempt}" <<< "$allPaths" | head -n 1)
+        if test "$output" != ""; then
+            break
+        fi
+    done
+    echo "$output"
+}
+
+getFilePath () {
+    local searchString=$1
+    local output=$(grep -Ri "/usr/share/applications/" -e "$searchString" | awk -F: '{ print $1 }' | sed -n "1"p)
+    echo "$output"
+}
+
+getIconPath () {
+    local path=$1
+    local output=$(grep -i "$path" -e "Icon=" | awk -F= '{ print $2 }')
+    echo "$output"
+}
+
+getIconPaths () {
+    local icon=$1
+    local output=$(find /usr/share/icons/ -iname "*${icon}.*")
+    local output2=$(find /usr/share/pixmaps/ -iname "*${icon}.*")
+    if test "$output" != ""; then
+        echo "$output"
+    fi
+    if test "$output2" != ""; then
+        echo "$output2"
+    fi
+}
+
+filePath=$(getFilePath "$comm")
+if test "$filePath" != ""; then
+    iconName=$(getIconPath "$filePath")
+else
+filePath=$(getFilePath "$exe")
+    if test "$filePath" != ""; then
+        iconName=$(getIconPath "$filePath")
+    else
+        exit 0
+    fi
+fi
+
+allIconPaths=$(getIconPaths "$iconName")
+if test "$allIconPaths" == ""; then
+    exit 0
+fi
+
+findBestFit "$allIconPaths"
