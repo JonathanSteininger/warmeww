@@ -9,17 +9,13 @@ networkTrackingLocation="$HOME/.config/eww/scripts/states/networkHistory"
 
 printHelp () {
     echo "
-Usage: network [COMMAND] [?INTERFACE]
+Usage: network [COMMAND]
 
 commands:
     help - prints help menu
-    interfaces - prints a json string of all interfaces
-    upload [INTERFACE] - prints upload of interface in Mbps
-    download [INTERFACE] - prints download of interface in Mbps
-
-Interface:
-    all - prints the total average of all interfaces
-    interface name - print the average of the named interface
+    tracking - prints json array of past 20 network queries
+    interfaces - prints a iteratable list of interfaces
+    save - makes application force to save to history (saving is done automatically)
     "
 }
 
@@ -144,8 +140,6 @@ if test "$1" == "all"; then
     printAll
     saveState
 elif test "$1" == "tracking"; then
-    getUpdatedTrackingJSON
-elif test "$1" == "tracking2"; then
     output=$(getUpdatedTrackingJSON)
     saveState
     biggestJSON=$(getBiggestJSON "$output")

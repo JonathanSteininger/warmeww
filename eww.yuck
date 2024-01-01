@@ -15,8 +15,8 @@
   `scripts/getAudioDevices all`)
 
 (defpoll networkTracking :interval "1s"
-  :initial `scripts/network tracking2 &`
-  `scripts/network tracking2 &`)
+  :initial `scripts/network tracking &`
+  `scripts/network tracking &`)
 
 (defpoll networkInterfaces :interval "10s"
   `scripts/network interfaces`)
