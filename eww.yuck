@@ -251,7 +251,7 @@
                  )
             )
        (box :halign "start" :valign "start" :class "max" 
-            "${round((data[0]["${interface}"] + 1)/ 1000, 2)} Kb")
+            "${round((data.max["${interface}"] + 1)/ 1000, 2)} Kb")
        )
   )
 (defwidget networkStats []
