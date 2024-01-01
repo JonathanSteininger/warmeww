@@ -4,11 +4,28 @@ pid=$1
 if test "$pid" == "-1"; then 
     exit 0
 fi
+iconCacheLocation="$HOME/.config/eww/scripts/iconCache"
 comm=$(ps --noheader -q "$pid" -o comm=)
 exe=$(ps --noheader -q "$pid" -o exe=)
 
 commParent=$(ps --noheader -q $(ps --noheader -q "$pid" -o ppid=) -o comm=)
 exeParent=$(ps --noheader -q $(ps --noheader -q "$pid" -o ppid=) -o exe=)
+
+checkIconCache () {
+    local commandName=$1
+    local iconCachePath="$iconCacheLocation/$commandName"
+    if test -f "$iconCachePath"; then
+        #chached icon exists
+        echo "$(head -n 1 "$iconCachePath")"
+    fi
+}
+
+cacheIcon () {
+    local commandName=$1
+    local pathToIcon=$2
+    local finalPath="$iconCacheLocation/$commandName"
+    echo "$pathToIcon" > "$finalPath"
+}
 
 mainCatagory=( "arcticons-dark" )
 
@@ -74,6 +91,27 @@ getIconPaths () {
     fi
 }
 
+
+
+
+
+# program start ------------------------------
+
+# checking cache dir
+cacheIconPath=$(checkIconCache "$comm")
+if test "$cacheIconPath" != ""; then
+    echo "$cacheIconPath"
+    exit 0
+fi
+
+cacheIconPath=$(checkIconCache "$commParent")
+if test "$cacheIconPath" != ""; then
+    echo "$cacheIconPath"
+    exit 0
+fi
+# nothing found in cache
+
+
 filePath=$(getFilePath "$comm")
 if test "$filePath" != ""; then
     iconName=$(getIconPath "$filePath")
@@ -92,6 +130,7 @@ if test "$allIconPaths" != ""; then
 fi
 if test "$output" != ""; then
     echo "$output"
+    cacheIcon "$comm" "$output"
     exit 0
 fi
 
@@ -114,5 +153,6 @@ if test "$allIconPaths" != ""; then
 fi
 if test "$output" != ""; then
     echo "$output"
+    cacheIcon "$commParent" "$output"
     exit 0
 fi

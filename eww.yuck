@@ -42,7 +42,7 @@
   `acpi`)
 
 (defpoll workspaces :interval "5s"
-  `scripts/getOpenWindowsJSON`)
+  `scripts/getOpenWindowsJSON &`)
 
 (defpoll time :interval "1s"
   :initial "00:00 am"  ; optional, defaults to poll at startup
