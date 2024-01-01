@@ -27,11 +27,11 @@ formatInterfaceJSON () {
 }
 
 getInterfacesLines () {
-    echo "$(ifstat -j | jq '.kernel | keys[]' | tr -d "\"")"
+    echo "$(ifstat -j | jq '.[] | keys[]' | tr -d "\"")"
 }
 
 getInterfacesJSON () {
-    echo "$(ifstat -j | jq '.kernel | keys')"
+    echo "$(ifstat -j | jq '.[] | keys')"
 }
 
 getInterfacesTotal () {
