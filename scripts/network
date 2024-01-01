@@ -26,33 +26,12 @@ formatInterfaceJSON () {
     echo "\"${interface}\":{\"download\":${download},\"upload\":${upload}}"
 }
 
-getInterfacesLines () {
-    echo "$(ifstat -j | jq '.[] | keys[]' | tr -d "\"")"
-}
-
 getInterfacesJSON () {
     echo "$(ifstat -j | jq '.[] | keys')"
 }
 
 getInterfacesTotal () {
-    local totalUp=0
-    local totalDown=0
-    local output=""
-    local flag=true
-    while read interface; do
-        local upload=$(ifstat -j | jq ".kernel.${interface}.tx_bytes")
-        totalUp=$(bc <<< "$upload + $totalUp")
-        local download=$(ifstat -j | jq ".kernel.${interface}.rx_bytes")
-        totalDown=$(bc <<< "$download + $totalDown")
-        if $flag; then
-            output=",$(formatInterfaceJSON "$interface" "$download" "$upload")"
-        else
-            output="${output},$(formatInterfaceJSON "$interface" "$download" "$upload")"
-        fi
-        flag=false;
-    done <<< "$(getInterfacesLines)"
-    output="{$(formatInterfaceJSON "all" $totalDown $totalUp)${output}}"
-    echo "$output"
+    echo "$(ifstat -j | jq -c '.[] | to_entries | map(.value = {download: .value.rx_bytes, upload: .value.tx_bytes} | .) | [({key: "all", value:  {download: (map(.value.download) | add), upload: (map(.value.upload) | add)}}),.[]] | from_entries')"
 }
 
 
@@ -61,7 +40,7 @@ printAll () {
     local now=$(getInterfacesTotal)
     local past=$(cat "$networkStateLocation")
     local input="[$(getInterfacesTotal),$(cat "$networkStateLocation")]"
-    local output=$(jq "map(to_entries) | flatten | group_by(.key) | map(.[0].value.download -= .[1].value.download | .[0].value.upload -= .[1].value.upload) | [.[].[0]] | from_entries" <<< "$input")
+    local output=$(jq -c "map(to_entries) | flatten | group_by(.key) | map(.[0].value.download -= .[1].value.download | .[0].value.upload -= .[1].value.upload) | [.[].[0]] | from_entries" <<< "$input")
     echo $output
 }
 
@@ -103,7 +82,6 @@ saveState () {
 
 getBiggestJSON () {
     local history=$1
-    echo "$1" > "temp.txt"
     local maxs=$(jq -c "map(to_entries) | flatten | group_by(.key) | map({key: .[0].key, value: map(.value[]) | max}) | from_entries" <<< "$history")
     echo "$maxs"
 }
