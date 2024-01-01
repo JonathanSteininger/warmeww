@@ -5,7 +5,7 @@ do
 filename=`tr "/" " " <<< "$link" | awk '{print $NF}'`
 finalPath="spotifyicons/$filename"
 outputPath="scripts/$finalPath"
-finalPath="/home/aureus/.config/eww/$outputPath"
+finalPath="$HOME/.config/eww/$outputPath"
 
 #checks to save file
 if test -f $finalPath; then

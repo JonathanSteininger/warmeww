@@ -3,7 +3,7 @@
 commandIn="$1"
 inputIn="$2"
 
-openWindowPath="/home/aureus/.config/eww/scripts/states/openWindow"
+openWindowPath="$HOME/.config/eww/scripts/states/openWindow"
 
 getOpenWindow=`head -n 1 "$openWindowPath"`
 
