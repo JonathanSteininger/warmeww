@@ -60,19 +60,8 @@ getInterfacesTotal () {
 printAll () {
     local now=$(getInterfacesTotal)
     local past=$(cat "$networkStateLocation")
-    local output=""
-    local flag=true
-    while read interface; do
-        local uploadDiff=$(bc <<< "$(jq ".${interface}.upload" <<< "$now") - $(jq ".${interface}.upload" <<< "$past")")
-        local downloadDiff=$(bc <<< "$(jq ".${interface}.download" <<< "$now") - $(jq ".${interface}.download" <<< "$past")")
-        if $flag; then
-            output="$(formatInterfaceJSON "$interface" "$downloadDiff" "$uploadDiff")"
-        else
-            output="${output},$(formatInterfaceJSON "$interface" "$downloadDiff" "$uploadDiff")"
-        fi
-        flag=false;
-    done <<< "$(getInterfacesLines)"$'\n'"all"
-    local output="{${output}}"
+    local input="[$(getInterfacesTotal),$(cat "$networkStateLocation")]"
+    local output=$(jq "map(to_entries) | flatten | group_by(.key) | map(.[0].value.download -= .[1].value.download | .[0].value.upload -= .[1].value.upload) | [.[].[0]] | from_entries" <<< "$input")
     echo $output
 }
 
@@ -114,37 +103,19 @@ saveState () {
 
 getBiggestJSON () {
     local history=$1
-    local jsonInsert="\"all\":0"
-    local flag=true
-    #formats the jsonInsert
-    while read line; do
-            jsonInsert="${jsonInsert},\"${line}\":0"
-    done <<< "$(getInterfacesLines)"
-    local jsonInsert="{${jsonInsert}}"
-
-    #go through each history node
-    while read node; do
-        #goes through each interface in node
-        while read interface; do
-            local currentValue=$(jq ".${interface}" <<< "$jsonInsert")
-            local biggest=$(jq ".${interface} | map(.) | max" <<< "$node")
-            if (( $biggest > $currentValue )); then
-                jsonInsert=$(jq -c ".${interface} = ${biggest}" <<< "$jsonInsert")
-            fi
-        done <<< "$(jq -c "keys[]" <<< "$node" | tr -d "\"")"
-    done <<< "$(jq -c '.[]' <<< "$history")"
-    echo "$jsonInsert"
+    echo "$1" > "temp.txt"
+    local maxs=$(jq -c "map(to_entries) | flatten | group_by(.key) | map({key: .[0].key, value: map(.value[]) | max}) | from_entries" <<< "$history")
+    echo "$maxs"
 }
 
 if test "$1" == "all"; then
     printAll
     saveState
 elif test "$1" == "tracking"; then
-    output=$(getUpdatedTrackingJSON)
+    everything=$(getUpdatedTrackingJSON)
     saveState
-    biggestJSON=$(getBiggestJSON "$output")
-    output=$(jq -c '[.[0], .[1][]]' <<< "[${biggestJSON},${output}]")
-    echo "$output"
+    maxs=$(getBiggestJSON "$everything")
+    echo "{\"max\":${maxs},\"history\":${everything}}"
 elif test "$1" == "save"; then
     saveState
 elif test "$1" == "interfaces"; then

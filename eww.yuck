@@ -154,11 +154,11 @@
        (button :class "network" :onclick "scripts/windowManager open networkStats"
                (box :orientation "v" :width 70 
                     (box :orientation "h" :space-evenly false :spacing 5 :halign "center"
-                               "${round(networkTracking[1].all.upload/ 1000000, 3)} Mbps"
+                               "${round(networkTracking.history[0].all.upload/ 1000000, 3)} Mbps"
                                "󰁞"
                      )
                     (box :orientation "h" :space-evenly false :spacing 5 :halign "center"
-                               "${round(networkTracking[1].all.download / 1000000, 3)} Mbps"
+                               "${round(networkTracking.history[0].all.download / 1000000, 3)} Mbps"
                               "󰁆"
                      )
                  )
@@ -219,7 +219,7 @@
        date
        ))
 
-(defvar count "[21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1]"
+(defvar count "[20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0]"
   )
 (defwidget myGraphNetwork [data forEachLoopVar interface barHeight]
   (box :class "graphContainer" :space-evenly false :spacing 2
@@ -234,12 +234,12 @@
                  (for num in forEachLoopVar
                       (box :orientation "h"
                            (box :class "downloadContainer" :orientation "v" :space-evenly false :valign "end"
-                                (box :class "graphBar download" :height {round(barHeight * (((data[num]["${interface}"].download + data[num == 21 ? num : num + 1]["${interface}"].download)/2) / (data[0]["${interface}"] + 1)), 0)}
+                                (box :class "graphBar download" :height {round(barHeight * (((data.history[num]["${interface}"].download + data.history[num == 20 ? num : num + 1]["${interface}"].download)/2) / (data.max["${interface}"] + 1)), 0)}
                                      :width 1 
                                      )
                                 )
                            (box :class "uploadContainer" :orientation "v" :space-evenly false :valign "end"
-                                (box :class "graphBar upload" :height {round(barHeight * (((data[num]["${interface}"].upload + data[num == 21 ? num : num + 1]["${interface}"].upload)/2) / (data[0]["${interface}"] + 1)), 0)}
+                                (box :class "graphBar upload" :height {round(barHeight * (((data.history[num]["${interface}"].upload + data.history[num == 20 ? num : num + 1]["${interface}"].upload)/2) / (data.max["${interface}"] + 1)), 0)}
                                      :width 1 
                                      )
                                 )
