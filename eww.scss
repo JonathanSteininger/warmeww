@@ -9,6 +9,7 @@ $accent-bright: $bright-accent;
 $text:rgb(255, 211, 176); 
 $minPadding: 20px;
 $borderRadius: 10px;
+$borderDefault: solid 2px $accent;
 
 * {
     all:unset;
@@ -53,12 +54,12 @@ box{
 
 .external{
     background-color: $background; 
-    border: 2px solid $accent;
+    border: $borderDefault;
     border-radius: $borderRadius;
 }
 
 .border{
-    border: 2px solid $accent;
+    border: $borderDefault;
     border-radius: $borderRadius;
 }
 
@@ -112,7 +113,7 @@ trough {
 }
 
 .musicControls button{
-    border-top: solid 2px $accent;
+    border-top: $borderDefault;
     font-size:20pt;
     padding: 10px;
 }
@@ -122,8 +123,8 @@ trough {
 }
 
 .musicControls .middle{
-    border-right: solid 2px $accent;
-    border-left: solid 2px $accent;
+    border-right: $borderDefault;
+    border-left: $borderDefault;
 }
 
 .musicSlider trough {
@@ -168,7 +169,7 @@ trough {
     background-color: $accent;
 }
 .end .performance .barContainer {
-    border: solid 2px $accent;
+    border: $borderDefault;
     background-color: $background;
 }
 .computerStats trough{
@@ -190,7 +191,7 @@ $netDownColor: $accent;
     padding: $minPadding 0 5px $minPadding;
     border-radius: $borderRadius;
     background-color: black;
-    border: solid 2px $accent;
+    border: $borderDefault;
 }
 .graph{
     border: solid 1px $accent;
@@ -224,4 +225,34 @@ $netDownColor: $accent;
 .graphContainer .interfaceName{
     padding-top: 5px;
     font-size: 14pt;
+}
+.wifiStats button {
+    border-top: $borderDefault;
+}
+.border {
+    border: $borderDefault;
+}
+.borderTop {
+    border-top: $borderDefault;
+}
+.borderBottom {
+    border-bottom: $borderDefault;
+}
+.borderRight{
+    border-right: $borderDefault;
+}
+.borderLeft{
+    border-left: $borderDefault;
+}
+.h1 {
+    font-size: 24pt;
+}
+.h2 {
+    font-size: 20pt;
+}
+.h3 {
+    font-size: 16pt;
+}
+.h4 {
+    font-size: 12pt;
 }

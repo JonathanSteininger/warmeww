@@ -21,6 +21,9 @@
 (defpoll networkInterfaces :interval "10s"
   `scripts/network interfaces`)
 
+(defpoll wifi :interval "1s"
+  `scripts/wifi get`)
+
 (defpoll battery :interval "5s"
   :initial `scripts/battery amount`
   `scripts/battery amount`)
@@ -28,6 +31,11 @@
 (defpoll charging :interval "5s"
   :initial `scripts/battery charging`
   `scripts/battery charging`)
+
+(defpoll powerMode :interval "1s"
+  :initial `tlp-stat -s | awk -F= '/Mode/ { print $2 $3} &'`
+  `tlp-stat -s | awk -F= '/Mode/ { print $2 $3}' &`)
+
 
 (defpoll processes :interval "1s"
   :initial `ps Tk "-pcpu" --deselect -o "pid:7,comm:18,pcpu:5,pmem:6" | head | tr "%" " " | sed "s/./%/34" | awk '{ print $0 " %" }'`
@@ -146,6 +154,11 @@
 
 (defwidget end []
   (box :class "end" :orientation "h" :halign "end" :space-evenly false :spacing 0
+       (button :class "wifi" :onclick "scripts/windowManager open wifiStats"
+               (box :class "icon"
+                    {wifi.connected ? "󱛆 " : "󰖪 "}
+                    )
+               )
        (button :class "brightness" :onclick "scripts/windowManager open brightnessControls"
                (box :class "icon"
                     " "
@@ -218,6 +231,23 @@
   (box :class "external pad topLeft" :orientation "v"
        date
        ))
+(defwidget wifiStats [] 
+  (box :class "external topRight wifiStats" :orientation "v" :space-evenly false  
+       (box :class "wifiInfo pad" :orientation "h" :space-evenly false :spacing 10 :halign "center"
+            (box :class "icon" {wifi.connected ? "󰖩 " : "󰖪 "})
+            (box :class "text" {wifi.connected ? "${wifi.name}" : "Wifi not connected!"})
+            (box :class "text" {wifi.connected ? "${wifi.address}" : ""})
+         )
+       (button :class "pad" :onclick "scripts/windowManager close; iwgtk &"
+               (box :space-evenly false :halign "center" :spacing 10
+                 (box :class "icon"
+                      " ")
+                 (box :class "text"
+                      "Wifi Settings")
+                 )
+               )
+       )
+  )
 
 (defvar count "[20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0]"
   )
@@ -382,16 +412,36 @@
  ))
 
 (defwidget batteryInfo []
-  (box :class "external pad batteryInfo topRight" :orientation "h" :space-evenly false :spacing 10
-       (scale :min 0 ; sets volume and updates volume variable
-              :max 101
-              :active false
-              :value battery
-              :onchange ""
-              )
-       "${battery}%"
-       )
-  )
+  (box :class "external batteryInfo topRight" :orientation "v" :space-evenly false 
+       (box :class "pad" :orientation "h" :space-evenly false :spacing 10
+            (scale :min 0 ; sets volume and updates volume variable
+                   :max 101
+                   :active false
+                   :value battery
+                   :onchange ""
+                   )
+            "${battery}%"
+            )
+       (box :class "borderTop")
+       (box :class "powerSettings pad" :orientation "v" :space-evenly false :spacing 10 
+            (box :class "h3" "Power profile options")
+            (box :class "powerOptions border" :orientation "v" :space-evenly false 
+                 (box :class "pad borderBottom"
+                   "Current Mode:"
+                   "${powerMode}"
+                   )
+                 (box 
+                   (button :class "pad" :onclick "$(pkexec tlp start) &"
+                           "Auto")
+                   (button :class "pad borderLeft borderRight" :onclick "$(pkexec tlp ac) &" 
+                           "AC")
+                   (button :class "pad" :onclick "$(pkexec tlp bat) &" 
+                           "Battery")
+                   )
+                 )
+            )
+
+   ))
 
 
 (defwidget musicControls []
@@ -462,6 +512,18 @@
   (musicControls)
   )
 
+(defwindow wifiStats
+  :monitor 0
+  :geometry (geometry :x "0%"
+                      :y "0px"
+                      :width "300px"
+                      :height "10px"
+                      :anchor "top right")
+  :stacking "overlay"
+  :exclusive false
+  :wm-ignore false
+  (wifiStats)
+  )
 (defwindow audioControls
   :monitor 0
   :geometry (geometry :x "0%"
