@@ -8,10 +8,6 @@ else
     mkdir "/tmp/eww"
 fi
 
-
-
-
-
 # these are the ones you would need to set manually.
 fan1MinSpeedLocation="/sys/devices/platform/applesmc.768/fan1_min"
 fan2MinSpeedLocation="/sys/devices/platform/applesmc.768/fan2_min"
