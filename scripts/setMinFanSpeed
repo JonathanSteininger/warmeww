@@ -1,0 +1,59 @@
+#! /usr/bin/bash
+
+tempStorageLocation="/tmp/eww/minFanSpeed"
+
+if test -d "/tmp/eww"; then
+    echo "" > "/dev/null"
+else
+    mkdir "/tmp/eww"
+fi
+
+
+
+
+
+# these are the ones you would need to set manually.
+fan1MinSpeedLocation="/sys/devices/platform/applesmc.768/fan1_min"
+fan2MinSpeedLocation="/sys/devices/platform/applesmc.768/fan2_min"
+
+printHelp () {
+    echo "
+Usage: setMinFanSpeed [command]
+
+commands: 
+    store [value] - stores a number in the temporary file
+    commit - updates the minimum fan speed of the system.
+    "
+}
+
+commit () {
+    echo "$1" > "$fan1MinSpeedLocation"
+    echo "$1" > "$fan2MinSpeedLocation"
+    systemctl restart mbpfan
+}
+
+saveToStorage () {
+    echo "$1" > "$tempStorageLocation"
+}
+getFromStorage () {
+    head -n1 "$tempStorageLocation"
+}
+
+if test "$1" == "store"; then
+    if test "$2" == ""; then
+        echo "Missing argument!"
+        printHelp
+        exit 2
+    fi
+    saveToStorage "$2"
+elif test "$1" == "commit"; then
+    storedValue=$(getFromStorage)
+    if test "$storedValue" == ""; then
+        echo "nothing in storage"
+        exit 2
+    fi
+    commit "$storedValue"
+else
+    printHelp
+fi
+
