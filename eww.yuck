@@ -4,6 +4,26 @@
 
 ; VARIABLES ===================================================
 
+
+(defvar minSliderFanSpeed 0)
+(defvar maxSliderFanSpeed 6000)
+
+(defpoll fanSpeedRight :interval "1s"
+  :initial `sensors | awk ' /Right/ && /RPM/ { print $4 }'`
+   `sensors | awk ' /Right/ && /RPM/ { print $4 }'`)
+(defpoll fanSpeedLeft :interval "1s"
+  :initial `sensors | awk ' /Left/ && /RPM/ { print $4 }'`
+   `sensors | awk ' /Left/ && /RPM/ { print $4 }'`)
+
+(defpoll minFanSpeed :interval "1s"
+  :initial `head -n 1 /sys/devices/platform/applesmc.768/fan1_min`
+   `head -n 1 /sys/devices/platform/applesmc.768/fan1_min`)
+
+;need to update the stored value when this variable refreshes. otherwise there will be a desyinc in whats stored and what you see. 
+(defpoll barMinFanSpeed :interval "10h"
+  :initial `head -n 1 /sys/devices/platform/applesmc.768/fan1_min; scripts/setMinFanSpeed store $(head -n 1 /sys/devices/platform/applesmc.768/fan1_min)`
+   `head -n 1 /sys/devices/platform/applesmc.768/fan1_min; scripts/setMinFanSpeed store $(head -n 1 /sys/devices/platform/applesmc.768/fan1_min)`)
+
 (defpoll audioMuted :interval "1s"
   :initial `scripts/checkMuted`
   `scripts/checkMuted`)
@@ -154,6 +174,11 @@
 
 (defwidget end []
   (box :class "end" :orientation "h" :halign "end" :space-evenly false :spacing 0
+       (button :class "temp" :onclick "scripts/windowManager open tempStats"
+               (box :class "icon"
+                    ""
+                    )
+               )
        (button :class "wifi" :onclick "scripts/windowManager open wifiStats"
                (box :class "icon"
                     {wifi.connected ? "󱛆 " : "󰖪 "}
@@ -231,6 +256,48 @@
   (box :class "external pad topLeft" :orientation "v"
        date
        ))
+(defwidget tempStats [] 
+  (box :class "external  topRight tempStats" :orientation "v" :space-evenly false  
+       
+       (box :class "borderBottom pad" :orientation "h" :space-evenly false :spacing 10
+            (box :orientation "v" :space-evenly false :valign "center" :spacing 20
+                 (box
+                   "Left Fan: ${fanSpeedLeft} rpm"
+                   "Right Fan: ${fanSpeedRight} rpm"
+                   )
+                 (box :space-evenly false :spacing 50 :halign "center"
+                      (box :halign "start"
+                           "Min Speed: ${minFanSpeed}rpm"
+                           )
+                      )
+                 (box :space-evenly false :valign "center" :spacing 5
+                      "${barMinFanSpeed}"
+                      (scale :min minSliderFanSpeed :max maxSliderFanSpeed :active true :value barMinFanSpeed 
+                             :onchange "scripts/setMinFanSpeed store {}; eww update barMinFanSpeed={}" 
+                             )
+                      "${minSliderFanSpeed}/${maxSliderFanSpeed}"
+                      )
+                 )
+              (button :class "pad border" :onclick "$(pkexec scripts/setMinFanSpeed commit) &"
+                      "Set Fan Speed"
+                      )
+              )
+       
+       (box :class "pad" :orientation "v" :space-evenly false
+            (box :style "background-color: black;" :orientation "v" :space-evenly false
+                 "temp"
+                 "temp"
+                 "temp"
+                 "temp"
+                 "temp"
+                 "temp"
+                 "temp"
+                 "temp"
+                 "temp"
+                 )
+            )
+       )
+  )
 (defwidget wifiStats [] 
   (box :class "external topRight wifiStats" :orientation "v" :space-evenly false  
        (box :class "wifiInfo pad" :orientation "h" :space-evenly false :spacing 10 :halign "center"
@@ -512,6 +579,18 @@
   (musicControls)
   )
 
+(defwindow tempStats
+  :monitor 0
+  :geometry (geometry :x "0%"
+                      :y "0px"
+                      :width "300px"
+                      :height "10px"
+                      :anchor "top right")
+  :stacking "overlay"
+  :exclusive false
+  :wm-ignore false
+  (tempStats)
+  )
 (defwindow wifiStats
   :monitor 0
   :geometry (geometry :x "0%"
