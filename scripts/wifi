@@ -1,0 +1,61 @@
+#! /usr/bin/bash
+
+wifiInterfaceName="wlan0"
+
+printHelp () {
+    echo "
+Usage "wifi [Command]"
+
+commands:
+    help - prints help
+    get - gets current wifi information in json
+        \ output: {
+                    \"connected\": true,
+                    \"network\": \"[NAME]\",
+                    \"address\": \"A.B.C.D\"
+                  } 
+    "
+}
+
+getStats () {
+    station=$1
+    echo "$(iwctl station "$station" show | sed -ne '/Scanning/,$ p')"
+}
+
+getField () {
+    input=$1
+    fieldName=$2
+    echo "$(grep -i "$fieldName" <<< "$input" | head -n 1 | awk '{ print $NF }')"
+}
+
+formatNetworkJSON () {
+    local connected=$1
+    local name=$2
+    local address=$3
+    echo "{\"connected\":${connected},\"name\":\"${name}\",\"address\":\"${address}\"}"
+}
+
+getNetworkStatsJSON () {
+    local lines=$(getStats "$wifiInterfaceName")
+    local connected=$(getField "$lines" "state")
+    local network="none"
+    local address="none"
+    if test "$connected" == "connected"; then
+        local connected=true
+        local network=$(getField "$lines" "connected network")
+        local address=$(getField "$lines" "ipv4 address")
+
+    else
+        local connected=false
+    fi
+    formatNetworkJSON "$connected" "$network" "$address"
+}
+
+
+if test "$1" == "help"; then
+    printHelp
+elif test "$1" == "get"; then
+    getNetworkStatsJSON
+else
+    printHelp
+fi
