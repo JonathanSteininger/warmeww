@@ -1,6 +1,4 @@
 
-; Device names that you need to set 
-
 
 ; VARIABLES ===================================================
 
@@ -18,6 +16,10 @@
 (defpoll minFanSpeed :interval "1s"
   :initial `head -n 1 /sys/devices/platform/applesmc.768/fan1_min`
    `head -n 1 /sys/devices/platform/applesmc.768/fan1_min`)
+
+(defpoll sensors :interval "2s"
+  :initial `scripts/getSensors`
+  `scripts/getSensors`)
 
 ;need to update the stored value when this variable refreshes. otherwise there will be a desyinc in whats stored and what you see. 
 (defpoll barMinFanSpeed :interval "10h"
@@ -258,7 +260,7 @@
        ))
 (defwidget tempStats [] 
   (box :class "external  topRight tempStats" :orientation "v" :space-evenly false  
-       
+
        (box :class "borderBottom pad" :orientation "h" :space-evenly false :spacing 10
             (box :orientation "v" :space-evenly false :valign "center" :spacing 20
                  (box
@@ -278,26 +280,87 @@
                       "${minSliderFanSpeed}/${maxSliderFanSpeed}"
                       )
                  )
-              (button :class "pad border" :onclick "$(pkexec scripts/setMinFanSpeed commit) &"
-                      "Set Fan Speed"
+            (button :class "pad border" :onclick "$(pkexec scripts/setMinFanSpeed commit) &"
+                    "Set Fan Speed"
+                    )
+            )
+
+       (sensorBox :data sensors)
+       )
+  )
+
+(defwidget sensorBox [data]
+  (box :class "pad" :orientation "v" :space-evenly false
+       (box :style "background-color: black;" :orientation "v" :space-evenly false
+            (box :class "pad borderBottom" :orientation "v" :space-evenly false :spacing 20
+                 (box :class "h3 white hack" :halign "center"
+                 "CPU Sensors"
+                 )
+                 (box :orintation "h" :space-evenly true :spacing 10 
+                      (sensorDataColumn :data {sensors.cpu} :key1 "name" :title "Name"
+                                        :addon ":" :halign "center"
+                                        :titleClass "h3 white" :lineClass "sensorCatagoryLine" :textClass "h4 white sensorText")
+                      (sensorDataColumn :data {sensors.cpu} :key1 "temps" :key2 "current" :title "temp"
+                                        :addon "°C" :halign "center"
+                                        :titleClass "h3 white" :lineClass "sensorCatagoryLine" :textClass "h4 white sensorText")
+                      (sensorDataColumn :data {sensors.cpu} :key1 "temps" :key2 "hot" :title "hot"
+                                        :addon "°C" :halign "center"
+                                        :titleClass "h3 white" :lineClass "sensorCatagoryLine" :textClass "h4 white sensorText")
+                      (sensorDataColumn :data {sensors.cpu} :key1 "temps" :key2 "critical" :title "critical"
+                                        :addon "°C" :halign "center"
+                                        :titleClass "h3 white" :lineClass "sensorCatagoryLine" :textClass "h4 white sensorText")
                       )
-              )
-       
-       (box :class "pad" :orientation "v" :space-evenly false
-            (box :style "background-color: black;" :orientation "v" :space-evenly false
-                 "temp"
-                 "temp"
-                 "temp"
-                 "temp"
-                 "temp"
-                 "temp"
-                 "temp"
-                 "temp"
-                 "temp"
+                 )
+            (box :class "pad borderBottom" :orientation "v" :space-evenly false :spacing 20
+                 (box :class "h3 white hack" :halign "center"
+                 "GPU Sensors"
+                 )
+                 (box :orintation "h" :space-evenly true :spacing 10 
+                      (sensorDataColumn :data {sensors.gpu} :key1 "name" :title "Name"
+                                        :addon ":" :halign "center"
+                                        :titleClass "h3 white" :lineClass "sensorCatagoryLine" :textClass "h4 white sensorText")
+                      (sensorDataColumn :data {sensors.gpu} :key1 "temps" :key2 "current" :title "temp"
+                                        :addon "°C" :halign "center"
+                                        :titleClass "h3 white" :lineClass "sensorCatagoryLine" :textClass "h4 white sensorText")
+                      (sensorDataColumn :data {sensors.gpu} :key1 "temps" :key2 "critical" :title "critical"
+                                        :addon "°C" :halign "center"
+                                        :titleClass "h3 white" :lineClass "sensorCatagoryLine" :textClass "h4 white sensorText")
+                      )
+                 )
+
+            (box :class "pad white" :orientation "v" :space-evenly false :spacing 20
+                 (box :class "h3 white hack" :halign "center"
+                 "Other Sensors"
+                 )
+                 (box :orintation "h" :space-evenly true :spacing 30
+                      (for chunk in {sensors.general}
+                           (box :orintation "h" :space-evenly true :spacing 10
+                                (sensorDataColumn :data chunk :key1 "name" :title "Name"
+                                                  :addon ":" :halign "center" 
+                                                  :titleClass "h3 white" :lineClass "sensorCatagoryLine" :textClass "h4 white sensorText")
+                                (sensorDataColumn :data chunk :key1 "temp" :title "temp"
+                                                  :addon "°C" :halign "start"
+                                                  :titleClass "h3 white" :lineClass "sensorCatagoryLine" :textClass "h4 white sensorText")
+                                )
+                       )
+                      )
+                 )
+
+            )
+       )
+  )
+(defwidget sensorDataColumn [data title key1 ?key2 ?addon ?halign ?textClass ?titleClass ?lineClass]
+  (box :class "hack ${titleClass}" :orientation "v" :space-evenly false  :spacing 3
+       "${title}"
+       (box :class lineClass)
+       (for core in data
+            (box :class "hack ${textClass}" :halign "${halign}"
+                 "${key2 == "" ? core[key1] : core[key1][key2]}${addon}"
                  )
             )
        )
   )
+
 (defwidget wifiStats [] 
   (box :class "external topRight wifiStats" :orientation "v" :space-evenly false  
        (box :class "wifiInfo pad" :orientation "h" :space-evenly false :spacing 10 :halign "center"
