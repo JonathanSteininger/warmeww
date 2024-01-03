@@ -3,11 +3,12 @@
 # first thing removes all adapters
 # cpu: reformats the cpu data
 # gpu: reforamts the gpu data
-# general: reformats the rest of the sensors
-sensors -j | jq -c 'to_entries | del(.[].value.Adapter) | from_entries | 
+# general: reformats the rest of the sensor
+maxSensorAmount=15
+sensors -j | jq -c "to_entries | del(.[].value.Adapter) | from_entries | 
 {
-    cpu: (."coretemp-isa-0000" | to_entries | del(.[] | select(.key == "Adapter")) | map({name: .key, temps: {current: (.value | map(.) | .[0]),hot: (.value | map(.) | .[1]),critical: (.value | map(.) | .[2])}})),
-    gpu: (."radeon-pci-0100" | to_entries | map({name: .key, temps: {current: (.value | map(.) | .[0]), critical: (.value | map(.) | .[1])}})),
-    general:(."applesmc-isa-0300" | to_entries |  del(.[] | select(.key == "Left side  ")) | del(.[] | select(.key == "Right side ")) | map({name: .key, temp: (.value | flatten | .[0])}) | map(select(.temp > 0)))
-}'
+    cpu: (.\"coretemp-isa-0000\" | to_entries | del(.[] | select(.key == \"Adapter\")) | map({name: .key, temps: {current: (.value | map(.) | .[0]),hot: (.value | map(.) | .[1]),critical: (.value | map(.) | .[2])}})),
+    gpu: (.\"radeon-pci-0100\" | to_entries | map({name: .key, temps: {current: (.value | map(.) | .[0]), critical: (.value | map(.) | .[1])}})),
+    general:(.\"applesmc-isa-0300\" | to_entries |  del(.[] | select(.key == \"Left side  \")) | del(.[] | select(.key == \"Right side \")) | map({name: .key, temp: (.value | flatten | .[0])}) | map(select(.temp > 0)) | [_nwise(${maxSensorAmount})])
+}"
 
