@@ -27,33 +27,27 @@
 (defvar maxSliderFanSpeed 6000)
 
 (defpoll fanSpeedRight :interval "1s"
-  :initial `sensors | awk ' /Right/ && /RPM/ { print $4 }'`
   :run-while enableFans
-   `sensors | awk ' /Right/ && /RPM/ { print $4 }'`)
+  `sensors | awk ' /Right/ && /RPM/ { print $4 }'`)
 (defpoll fanSpeedLeft :interval "1s"
-  :initial `sensors | awk ' /Left/ && /RPM/ { print $4 }'`
   :run-while enableFans
-   `sensors | awk ' /Left/ && /RPM/ { print $4 }'`)
+  `sensors | awk ' /Left/ && /RPM/ { print $4 }'`)
 
 (defpoll minFanSpeed :interval "1s"
-  :initial `head -n 1 /sys/devices/platform/applesmc.768/fan1_min`
   :run-while enableFans
    `head -n 1 /sys/devices/platform/applesmc.768/fan1_min`)
 ;need to update the stored value when this variable refreshes. otherwise there will be a desyinc in whats stored and what you see. 
 (defpoll barMinFanSpeed :interval "10h"
-  :initial `head -n 1 /sys/devices/platform/applesmc.768/fan1_min; scripts/setMinFanSpeed store $(head -n 1 /sys/devices/platform/applesmc.768/fan1_min)`
   :run-while enableFans
    `head -n 1 /sys/devices/platform/applesmc.768/fan1_min; scripts/setMinFanSpeed store $(head -n 1 /sys/devices/platform/applesmc.768/fan1_min)`)
 
 
 
 (defpoll sensors :interval "2s"
-  :initial `scripts/getSensors`
   :run-while enableSensors
   `scripts/getSensors`)
 
 (defpoll audioMuted :interval "1s"
-  :initial `scripts/checkMuted`
   :run-while enableVolume
   `scripts/checkMuted`)
 
@@ -66,7 +60,6 @@
   `scripts/getAudioDevices all`)
 
 (defpoll networkTracking :interval "1s"
-  :initial `scripts/network tracking &`
   :run-while enableNetwork
   `scripts/network tracking &`)
 
@@ -80,28 +73,23 @@
 
 (defpoll battery :interval "5s"
   :run-while enableBattery
-  :initial `scripts/battery amount`
   `scripts/battery amount`)
 
 (defpoll charging :interval "5s"
   :run-while enableBattery
-  :initial `scripts/battery charging`
   `scripts/battery charging`)
 
 (defpoll powerMode :interval "1s"
   :run-while {enableBattery && enablePowerProfileSelection}
-  :initial `tlp-stat -s | awk -F= '/Mode/ { print $2 $3} &'`
   `tlp-stat -s | awk -F= '/Mode/ { print $2 $3}' &`)
 
 
 (defpoll processes :interval "1s"
   :run-while enablePerformance
-  :initial `ps Tk "-pcpu" --deselect -o "pid:7,comm:18,pcpu:5,pmem:6" | head | tr "%" " " | sed "s/./%/34" | awk '{ print $0 " %" }'`
   `ps Tk "-pcpu" --deselect -o "pid:7,comm:18,pcpu:5,pmem:6" | head | tr "%" " " | sed "s/./%/34" | awk '{ print $0 " %" }'`)
 
 (defpoll batteryTime :interval "5s"
   :run-while enableBattery
-  :initial `scripts/battery time`
   `scripts/battery time`)
 
 (defpoll workspaces :interval "5s"
@@ -115,25 +103,20 @@
 
 (defpoll date :interval "1m"
   :run-while enableTime
-  :initial `date +"%A %D"`  ; optional, defaults to poll at startup
   `date +"%A %D"`)
 
 (defpoll brightnessKbd :interval "5s"
   :run-while enableBrightness
-  :initial `brightnessctl -d $KEYBOARD_BACKLIGHT g`
   `brightnessctl -d $KEYBOARD_BACKLIGHT g`)
 (defpoll brightnessMon :interval "5s"
   :run-while enableBrightness
-  :initial `brightnessctl -d $MONITOR_BACKLIGHT g`
   `brightnessctl -d $MONITOR_BACKLIGHT g`)
 
 (defpoll brightnessKbdMax :interval "5h"
   :run-while enableBrightness
-    :initial `brightnessctl -d $KEYBOARD_BACKLIGHT m`
   `brightnessctl -d $KEYBOARD_BACKLIGHT m`)
 (defpoll brightnessMonMax :interval "5h"
   :run-while enableBrightness
-    :initial `brightnessctl -d $MONITOR_BACKLIGHT m`
   `brightnessctl -d $MONITOR_BACKLIGHT m`)
 
 (deflisten music :initial "Nothing Playing"
@@ -142,16 +125,14 @@
 
 (deflisten musicArt
   :run-while enableMusic
-  :initial ""
   `playerctl --follow -p spotify metadata --format '{{mpris:artUrl}}' | scripts/cacheSpotifyIcons`)
 
 (deflisten musicLength :interval "3s"
   :run-while enableMusic
-  :initial 100
   `playerctl --follow -p spotify metadata --format '{{mpris:length}}' | scripts/getSongLength`)
 (deflisten musicLengthText :interval "3s"
   :run-while enableMusic
-  :initial 100
+  :initial "2:30"
   `playerctl --follow -p spotify metadata --format '{{duration(mpris:length)}}'`)
 (deflisten musicPosition 
   :run-while enableMusic
