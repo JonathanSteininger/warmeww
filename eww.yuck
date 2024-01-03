@@ -1,3 +1,23 @@
+; Variables to disable features that need to be heavily altered to your machine.
+; if the variable is tabbed it means its in the sub menu
+(defvar enableTime true)
+(defvar enableWorkspaces true)
+(defvar enableMusic true)
+
+;these two are in the same sub menu. make both false if you want it gone completely 
+  (defvar enableSensors true)
+  (defvar enableFans true)
+
+
+(defvar enableWifi true)
+(defvar enableBrightness true)
+(defvar enableNetwork true)
+(defvar enablePerformance true)
+(defvar enableVolume true)
+
+
+(defvar enableBattery true)
+  (defvar enablePowerProfileSelection true) ; in the sub menu of battery
 
 
 ; VARIABLES ===================================================
@@ -8,114 +28,141 @@
 
 (defpoll fanSpeedRight :interval "1s"
   :initial `sensors | awk ' /Right/ && /RPM/ { print $4 }'`
+  :run-while enableFans
    `sensors | awk ' /Right/ && /RPM/ { print $4 }'`)
 (defpoll fanSpeedLeft :interval "1s"
   :initial `sensors | awk ' /Left/ && /RPM/ { print $4 }'`
+  :run-while enableFans
    `sensors | awk ' /Left/ && /RPM/ { print $4 }'`)
 
 (defpoll minFanSpeed :interval "1s"
   :initial `head -n 1 /sys/devices/platform/applesmc.768/fan1_min`
+  :run-while enableFans
    `head -n 1 /sys/devices/platform/applesmc.768/fan1_min`)
-
-(defpoll sensors :interval "2s"
-  :initial `scripts/getSensors`
-  `scripts/getSensors`)
-
 ;need to update the stored value when this variable refreshes. otherwise there will be a desyinc in whats stored and what you see. 
 (defpoll barMinFanSpeed :interval "10h"
   :initial `head -n 1 /sys/devices/platform/applesmc.768/fan1_min; scripts/setMinFanSpeed store $(head -n 1 /sys/devices/platform/applesmc.768/fan1_min)`
+  :run-while enableFans
    `head -n 1 /sys/devices/platform/applesmc.768/fan1_min; scripts/setMinFanSpeed store $(head -n 1 /sys/devices/platform/applesmc.768/fan1_min)`)
+
+
+
+(defpoll sensors :interval "2s"
+  :initial `scripts/getSensors`
+  :run-while enableSensors
+  `scripts/getSensors`)
 
 (defpoll audioMuted :interval "1s"
   :initial `scripts/checkMuted`
+  :run-while enableVolume
   `scripts/checkMuted`)
 
 (defpoll volume :interval "1s"
+  :run-while enableVolume
   `scripts/volume`)
 
 (defpoll audioDevices :interval "5s"
+  :run-while enableVolume
   `scripts/getAudioDevices all`)
 
 (defpoll networkTracking :interval "1s"
   :initial `scripts/network tracking &`
+  :run-while enableNetwork
   `scripts/network tracking &`)
 
 (defpoll networkInterfaces :interval "10s"
+  :run-while enableNetwork
   `scripts/network interfaces`)
 
 (defpoll wifi :interval "1s"
+  :run-while enableWifi
   `scripts/wifi get`)
 
 (defpoll battery :interval "5s"
+  :run-while enableBattery
   :initial `scripts/battery amount`
   `scripts/battery amount`)
 
 (defpoll charging :interval "5s"
+  :run-while enableBattery
   :initial `scripts/battery charging`
   `scripts/battery charging`)
 
 (defpoll powerMode :interval "1s"
+  :run-while {enableBattery && enablePowerProfileSelection}
   :initial `tlp-stat -s | awk -F= '/Mode/ { print $2 $3} &'`
   `tlp-stat -s | awk -F= '/Mode/ { print $2 $3}' &`)
 
 
 (defpoll processes :interval "1s"
+  :run-while enablePerformance
   :initial `ps Tk "-pcpu" --deselect -o "pid:7,comm:18,pcpu:5,pmem:6" | head | tr "%" " " | sed "s/./%/34" | awk '{ print $0 " %" }'`
   `ps Tk "-pcpu" --deselect -o "pid:7,comm:18,pcpu:5,pmem:6" | head | tr "%" " " | sed "s/./%/34" | awk '{ print $0 " %" }'`)
 
 (defpoll batteryTime :interval "5s"
+  :run-while enableBattery
   :initial `scripts/battery time`
   `scripts/battery time`)
 
-(defpoll batteryLong :interval "5s"
-  :initial `acpi`
-  `acpi`)
-
 (defpoll workspaces :interval "5s"
+  :run-while enableWorkspaces
   `scripts/getOpenWindowsJSON &`)
 
 (defpoll time :interval "1s"
+  :run-while enableTime 
   :initial "00:00 am"  ; optional, defaults to poll at startup
   `date +"%l:%M:%S %p"`)
 
 (defpoll date :interval "1m"
+  :run-while enableTime
   :initial `date +"%A %D"`  ; optional, defaults to poll at startup
   `date +"%A %D"`)
 
 (defpoll brightnessKbd :interval "5s"
+  :run-while enableBrightness
   :initial `brightnessctl -d $KEYBOARD_BACKLIGHT g`
   `brightnessctl -d $KEYBOARD_BACKLIGHT g`)
 (defpoll brightnessMon :interval "5s"
+  :run-while enableBrightness
   :initial `brightnessctl -d $MONITOR_BACKLIGHT g`
   `brightnessctl -d $MONITOR_BACKLIGHT g`)
 
 (defpoll brightnessKbdMax :interval "5h"
+  :run-while enableBrightness
     :initial `brightnessctl -d $KEYBOARD_BACKLIGHT m`
   `brightnessctl -d $KEYBOARD_BACKLIGHT m`)
 (defpoll brightnessMonMax :interval "5h"
+  :run-while enableBrightness
     :initial `brightnessctl -d $MONITOR_BACKLIGHT m`
   `brightnessctl -d $MONITOR_BACKLIGHT m`)
 
 (deflisten music :initial "Nothing Playing"
+  :run-while enableMusic
   "playerctl --follow -p spotify metadata --format '{{ artist }} - {{ title }}' || true")
 
 (deflisten musicArt
+  :run-while enableMusic
   :initial ""
   `playerctl --follow -p spotify metadata --format '{{mpris:artUrl}}' | scripts/cacheSpotifyIcons`)
 
 (deflisten musicLength :interval "3s"
+  :run-while enableMusic
   :initial 100
   `playerctl --follow -p spotify metadata --format '{{mpris:length}}' | scripts/getSongLength`)
 (deflisten musicLengthText :interval "3s"
+  :run-while enableMusic
   :initial 100
   `playerctl --follow -p spotify metadata --format '{{duration(mpris:length)}}'`)
 (deflisten musicPosition 
+  :run-while enableMusic
   :initial 0
   `playerctl --follow -p spotify position`)
 (deflisten musicTimeDisplay 
+  :run-while enableMusic
   :initial "0:00"
   `playerctl --follow -p spotify position --format '{{duration(position)}}'`)
 (deflisten musicPlaying :interval "1s"
+  :run-while enableMusic
   :initial "not"
   `playerctl --follow -p spotify status`)
 
@@ -135,6 +182,10 @@
 (defwidget start []
   (box :class "start" :halign "start" :space-evenly false 
        (clock)
+       (workspaceSection)
+       ))
+(defwidget workspaceSection []
+  (box :space-evenly false :visible enableWorkspaces
        (for workspace in workspaces
             (button :class "workspace" :onclick "hyprctl dispatch workspace ${workspace[0].id} &"
                     (box :orientation "v" :space-evenly false
@@ -150,10 +201,11 @@
                          )
                     )
             )
-       ))
+    )
+  )
 
 (defwidget clock []
-  (button :halign "start" 
+  (button :halign "start" :visible enableTime
           :class "clock" 
           :halign "start" 
           :onclick "scripts/windowManager open datePopOut &"
@@ -161,7 +213,7 @@
   )
 
 (defwidget musicSection []
-  (button :class "music" :onclick "scripts/windowManager open musicControls &";
+  (button :class "music" :onclick "scripts/windowManager open musicControls &" :visible enableMusic
           (box :orientatino "h" :interactable true :space-evenly false :spacing 10
                (box :class "note"
                     "♪")
@@ -176,22 +228,22 @@
 
 (defwidget end []
   (box :class "end" :orientation "h" :halign "end" :space-evenly false :spacing 0
-       (button :class "temp" :onclick "scripts/windowManager open tempStats"
+       (button :class "temp" :onclick "scripts/windowManager open tempStats" :visible {enableSensors || enableFans}
                (box :class "icon"
                     ""
                     )
                )
-       (button :class "wifi" :onclick "scripts/windowManager open wifiStats"
+       (button :class "wifi" :onclick "scripts/windowManager open wifiStats" :visible enableWifi
                (box :class "icon"
                     {wifi.connected ? "󱛆 " : "󰖪 "}
                     )
                )
-       (button :class "brightness" :onclick "scripts/windowManager open brightnessControls"
+       (button :class "brightness" :onclick "scripts/windowManager open brightnessControls" :visible enableBrightness
                (box :class "icon"
                     " "
                     )
                )
-       (button :class "network" :onclick "scripts/windowManager open networkStats"
+       (button :class "network" :onclick "scripts/windowManager open networkStats" :visible enableNetwork
                (box :orientation "v" :width 70 
                     (box :orientation "h" :space-evenly false :spacing 5 :halign "center"
                                "${round(networkTracking.history[0].all.upload/ 1000000, 3)} Mbps"
@@ -203,7 +255,7 @@
                      )
                  )
                )
-       (button :class "performance"
+       (button :class "performance" :visible enablePerformance
                :onclick "scripts/windowManager open computerStats"
                (box :space-evenly false
                     (box :class "icon" 
@@ -228,7 +280,7 @@
                          )
                     )
                )
-       (button :class "volume"
+       (button :class "volume" :visible enableVolume
                :onclick "scripts/windowManager open audioControls &"
                (box :spacing 5
                     (box :class "text" 
@@ -237,7 +289,7 @@
                          "${audioMuted ? "󰝟" : (volume < 60 ? (volume > 0 ? "󰖀" : "󰕿") : "󰕾 ")}")
                     )
                )
-       (button :class "battery"
+       (button :class "battery" :visible enableBattery
               :onclick "scripts/windowManager open batteryInfo &"
                (box :space-evenly false :spacing 10
                  (box :class "text"
@@ -261,7 +313,7 @@
 (defwidget tempStats [] 
   (box :class "external  topRight tempStats" :orientation "v" :space-evenly false  
 
-       (box :class "borderBottom pad" :orientation "h" :space-evenly false :spacing 10
+       (box :class "pad" :orientation "h" :space-evenly false :spacing 10 :visible enableFans
             (box :orientation "v" :space-evenly false :valign "center" :spacing 20
                  (box
                    "Left Fan: ${fanSpeedLeft} rpm"
@@ -284,13 +336,13 @@
                     "Set Fan Speed"
                     )
             )
-
+       (box :class "borderBottom" :visible {enableSensors && enableFans})
        (sensorBox :data sensors)
        )
   )
 
 (defwidget sensorBox [data]
-  (box :class "pad" :orientation "v" :space-evenly false
+  (box :class "pad" :orientation "v" :space-evenly false :visible enableSensors 
        (box :style "background-color: black;" :orientation "v" :space-evenly false
             (box :class "pad borderBottom" :orientation "v" :space-evenly false :spacing 20
                  (box :class "h3 white hack" :halign "center"
@@ -552,8 +604,8 @@
                    )
             "${battery}%"
             )
-       (box :class "borderTop")
-       (box :class "powerSettings pad" :orientation "v" :space-evenly false :spacing 10 
+       (box :class "borderTop" :visible enablePowerProfileSelection)
+       (box :class "powerSettings pad" :orientation "v" :space-evenly false :spacing 10 :visible enablePowerProfileSelection
             (box :class "h3" "Power profile options")
             (box :class "powerOptions border" :orientation "v" :space-evenly false 
                  (box :class "pad borderBottom"
