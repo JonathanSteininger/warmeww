@@ -10,7 +10,9 @@
     Things to know
   </h3>
   this config uses environment specific tools so if you have a different system utility then you will have to adjust the scripts.
-  I will list the things each section uses.
+  I will list the things each section uses.<br>
+  <br>
+  I added variables at the top of the eww.yuck config file to disable entire widgets if you don't want to use some.
 </div>
 
 <div>
