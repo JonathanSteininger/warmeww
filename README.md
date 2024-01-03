@@ -4,6 +4,7 @@
   This is a config that uses bash scripts and <a href="https://github.com/elkowar/eww">eww<a/>.<br>
   If you want to use this script you will have to change the root directory path to the scripts/spotifyicons directory inside the cacheSpotifyIcons script
 </p>
+<image src="https://github.com/JonathanSteininger/warmeww/assets/51342815/77023ddc-bac9-4b72-b871-3ef6454f6782">
 <div>
   <h3>
     Things to know
