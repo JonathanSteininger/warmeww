@@ -3,29 +3,18 @@
 commandIn="$1"
 inputIn="$2"
 
-openWindowPath="$HOME/.config/eww/scripts/states/openWindow"
-
-getOpenWindow=`head -n 1 "$openWindowPath"`
+ignoredWindows=( "bartop|musicBars" )
 
 #functions
 
 closeWindow () {
-    eww close windowCloser > /dev/null
-    if test "$getOpenWindow" != ""; then
-        eww close $getOpenWindow > /dev/null
-        echo "" > $openWindowPath
-    fi
+    eww close $(eww windows | grep "*" | grep -Ev "($ignoredWindows)" | tr -d "*" | tr "\n" " ")
 }
 
 openWindow () {
-    if test "$1" == "$getOpenWindow"; then
-        closeWindow
-    else
-        closeWindow
-        echo "$1" > $openWindowPath
-        eww open "$1" > /dev/null
-        eww open windowCloser > /dev/null
-    fi
+    closeWindow
+    eww open "$1" > /dev/null
+    eww open windowCloser > /dev/null
 }
 
 printHelp () {
