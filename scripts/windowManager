@@ -4,17 +4,23 @@ commandIn="$1"
 inputIn="$2"
 
 ignoredWindows=( "bartop|musicBars" )
+pathToLastOpenedWindow="/tmp/ewwLastOpenedWindow"
+
+lastOpenedWindow=$(tail -n 1 $pathToLastOpenedWindow)
 
 #functions
 
 closeWindow () {
     eww close $(eww windows | grep "*" | grep -Ev "($ignoredWindows)" | tr -d "*" | tr "\n" " ")
+    echo "" > $pathToLastOpenedWindow
 }
 
 openWindow () {
     closeWindow
-    eww open "$1" > /dev/null
-    eww open windowCloser > /dev/null
+    if test "$1" != "$lastOpenedWindow"; then
+        eww open-many windowCloser "$1" > /dev/null
+        echo "$1" > $pathToLastOpenedWindow
+    fi
 }
 
 printHelp () {
