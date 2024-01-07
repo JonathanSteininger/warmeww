@@ -1,5 +1,18 @@
 # WarmEww
 <body>
+<h2>WARNING</h2>
+<p>
+    I have added the cava program compiled on my machine. you will have to change the config's audio source.
+    I am in the process of creating a cava fork that allows for easy rendering of cava in this config.<br>
+    I will post the repository here when its done and maybe pull request it to the main cava repository.<br>
+    <br>
+    I got the idea to make this from <a href="https://github.com/ankkax/hyprland/blob/main/eww/bar/scripts/cava-internal.sh">ankkax bash script</a>.<br>
+    It returns the bars in text with ; splitting the lines which can then be replaced in eww for new lines. <br>
+    output: "█▂▃█  █▅▅█;████▂▃████;██████████" resulting in the following after replacing the ; with \n:<br>
+    █▂▃█  █▅▅█<br>
+    ████▂▃████<br>
+    ██████████<br>
+</p>
 <p>
   This is a config that uses bash scripts and <a href="https://github.com/elkowar/eww">eww<a/>.<br>
   If you want to use this script you will have to change the root directory path to the scripts/spotifyicons directory inside the cacheSpotifyIcons script
