@@ -1,16 +1,31 @@
 $background: rgba(50,10,9,0.8);
-$foreground: white;
+$foreground: rgb(255, 211, 176);
 $bg: $background;
 $fg: $foreground;
 $dark: rgba(13,15,1,0.8);
 $accent: rgba(135,35,65,0.8);
 $bright-accent: rgba(240, 89, 65, 0.8);
 $accent-bright: $bright-accent;
-$text:rgb(255, 211, 176); 
+$text: $foreground; 
+
+//solid versions
+$background-solid: rgb(50,10,9);
+$bg-solid: $background-solid;
+$dark-solid: rgb(13,15,1);
+$accent-solid: rgb(135,35,65);
+$bright-accent-solid: rgb(240, 89, 65);
+$accent-bright-solid: $bright-accent-solid;
+
+
 $minPadding: 20px;
 $borderRadius: 10px;
 $borderDefault: solid 2px $accent;
 
+
+$barColor: #9A031E;
+$secondaryBarColor: #EF4040;
+//$barColor: $accent;
+//$secondaryBarColor: $accent-bright;
 * {
     all:unset;
 }
@@ -20,8 +35,6 @@ box {
 
 .bar{
     background-color: $background; 
-/*    border-bottom: solid 2px $accent;
-*/
 }
 
 .bar button{
@@ -267,8 +280,9 @@ $netDownColor: $accent;
     margin-bottom: 10px;
 }
 .musicBar {
-    color: red;
-    font-size: 18pt;
+
+    color: $barColor;
+    font-size: 15pt;
     font-family: hack;
     letter-spacing: 3px;
 }

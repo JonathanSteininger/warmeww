@@ -16,7 +16,7 @@ autosens = 1
 
 # The number of bars (0-512). 0 sets it to auto (fill up console).
 # Bars' width and space between bars in number of characters.
-bars = 107
+bars = 121
 lower_cutoff_freq = 50
 higher_cutoff_freq = 10000
 
@@ -68,12 +68,14 @@ data_format = unicodeBars
 
 # Ascii max value. In 'ascii' mode range will run from 0 to value specified here
 # will define how high the bars are in unicodeBars mode. (ascii_max_range / 8 == amount of lines high)
-ascii_max_range = 159
+ascii_max_range = 79
 
 # Ascii delimiters. In ascii format each bar and frame is separated by a delimiters.
 # Use decimal value in ascii table (i.e. 59 = ';' and 10 = '\n' (line feed)).
 bar_delimiter = 59
 frame_delimiter = 10
+
+reverse = 1
 
 [smoothing]
 
