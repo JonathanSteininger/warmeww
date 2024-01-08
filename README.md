@@ -8,7 +8,9 @@
     Installing
 </h2>
 <p>
-    To install this configuration you need to run:
+    To install this configuration you need to run:<br>
+</p>
+    
 ```
 git clone --recurse-submodules https://github.com/JonathanSteininger/warmeww.git
 cd warmeww/cava
@@ -17,14 +19,27 @@ cd warmeww/cava
 make
 cp cava ../scripts/
 ```
+<p>
     If your having trouble building cava read the cava <a href="https://github.com/JonathanSteininger/warmeww/README.md">README.md</a>
-    
-The warmeww directory is the eww config and you can copy its contents to ~/.config/eww/ to have it be used by default.
-Run `eww open-many bartop musicBars` to start it. If you dont want the audio visualizer instead run `eww open bartop`.
+    The warmeww directory is the eww config and you can copy its contents to ~/.config/eww/ to have it be used by default. To start the config:
+</p>
 
-<h2>Rest of README.md<h2>
+`eww open-many bartop musicBars`
+<p>
+  If you dont want the audio visualizer instead run:
+</p>
+
+`eww open bartop`
+<h2>Rest of README.md</h2>
 </p>
 <image src="https://github.com/JonathanSteininger/warmeww/assets/51342815/77023ddc-bac9-4b72-b871-3ef6454f6782">
+
+<h3>simple configureation</h3>
+  <p>
+    You can enable and disable features with the top variables of eww.yuck
+    There are general variables in eww.scss that changes the entire look of every element.
+    You can change to settings of the musicBars by editing the cavaConfig file.
+  </p>
 <div>
   <h3>
     Things to know
