@@ -1,21 +1,28 @@
 # WarmEww
 <body>
-<h2>WARNING</h2>
-<p>
-    I have added the cava program compiled on my machine. you will have to change the config's audio source.
-    I am in the process of creating a cava fork that allows for easy rendering of cava in this config.<br>
-    I will post the repository here when its done and maybe pull request it to the main cava repository.<br>
-    <br>
-    I got the idea to make this from <a href="https://github.com/ankkax/hyprland/blob/main/eww/bar/scripts/cava-internal.sh">ankkax bash script</a>.<br>
-    It returns the bars in text with ; splitting the lines which can then be replaced in eww for new lines. <br>
-    output: "█▂▃█  █▅▅█;████▂▃████;██████████" resulting in the following after replacing the ; with \n:<br>
-    █▂▃█  █▅▅█<br>
-    ████▂▃████<br>
-    ██████████<br>
-</p>
 <p>
   This is a config that uses bash scripts and <a href="https://github.com/elkowar/eww">eww<a/>.<br>
   If you want to use this script you will have to change the root directory path to the scripts/spotifyicons directory inside the cacheSpotifyIcons script
+</p>
+<h2>
+    Installing
+</h2>
+<p>
+    To install this configuration you need to run:
+```
+git clone --recurse-submodules https://github.com/JonathanSteininger/warmeww.git
+cd warmeww/cava
+./autogen.sh
+./configure
+make
+cp cava ../scripts/
+```
+    If your having trouble building cava read the cava <a href="https://github.com/JonathanSteininger/warmeww/README.md">README.md</a>
+    
+The warmeww directory is the eww config and you can copy its contents to ~/.config/eww/ to have it be used by default.
+Run `eww open-many bartop musicBars` to start it. If you dont want the audio visualizer instead run `eww open bartop`.
+
+<h2>Rest of README.md<h2>
 </p>
 <image src="https://github.com/JonathanSteininger/warmeww/assets/51342815/77023ddc-bac9-4b72-b871-3ef6454f6782">
 <div>
