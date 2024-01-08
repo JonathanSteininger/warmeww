@@ -2,20 +2,130 @@
 input=$(hyprctl -j clients | jq -c 'map({id: .workspace.id, name: .workspace.name, pid: .pid})| map(select(.pid > 0)) | .[]')
 localPath="$HOME/.config/eww/scripts/"
 
-output=""
-flag=true
-while read -r JSONline; do
-    pid=$(jq '.pid' <<< "$JSONline")
-    path=$(~/.config/eww/scripts/getIconPath "$pid")
-    newJSONline=$(jq -c "{id: .id, name: .name, icon: \"$path\"}" <<< "$JSONline")
+printHelp () {
+    echo "
+usage: getOpenWindows [command]
 
-    if $flag; then
-        output="$newJSONline"
-        flag=false
-    else
-        output="${output},$newJSONline"
-    fi
-done <<< "$input"
-output="[$output]"
-echo "$(jq -c 'group_by(.id)' <<< "$output")"
+commands:
+    json - prints windows in json array.
+    yuck - prints raw yuck elements to be drawn.
+    "
+}
+yuckTemplate=" 
+            (button :class \"workspace\" :onclick \"hyprctl dispatch workspace \${workspace[0].id} &\"
+                    (box :orientation \"v\" :space-evenly false
+                         (box :class \"markers\" :halign \"center\" :valign \"start\" :orientation \"h\" :space-evenly false :spacing 2
+                              (for app in workspace
+                                   (box :class \"marker\" :style background-image: url('\${app.icon}');\"
+                                        )
+                                   )
+                              )
+                         (box :class \"text\" :space-evenly false :halign \"center\"
+                              \"\${replace(workspace[0].name, \"special:\", \"\")}\"
+                              )
+                         )
+                    )
+                    "
+yuckTemplate="
+(button :class \"workspace\" :onclick \"hyprctl dispatch workspace \${workspace[0].id} &\"
+    (box :orientation \"v\" :space-evenly false
+         (box :class \"markers\" :halign \"center\" :valign \"start\" :orientation \"h\" :space-evenly false :spacing 2
+                   (box :class \"marker\" :style background-image: url('\${app.icon}');\")
+         )
+         (box :class \"text\" :space-evenly false :halign \"center\" \"\${replace(workspace[0].name, \"special:\", \"\")}\")
+    )
+)
+                    "
+yuckStart="
+            (button :class \"workspace\" :onclick \"hyprctl dispatch workspace \${workspace[0].id} &\"
+                    (box :orientation \"v\" :space-evenly false
+                         (box :class \"markers\" :halign \"center\" :valign \"start\" :orientation \"h\" :space-evenly false :spacing 2
+                         "
+                         # generate icon boxes
+yuckEnd=")))"
+
+getYuckIconBox () {
+    local iconUrl=$1
+    echo " (box :class \"marker\" :style \"background-image: url('${iconUrl}');\")"
+}
+getYuckWorkspaceNameBox () {
+    local workspaceName=$1
+    echo "(box :class \"text\" :halign \"center\" \"${workspaceName}\")"
+}
+getWindowsJSON () {
+    local output=""
+    local flag=true
+    while read -r JSONline; do
+        local pid=$(jq '.pid' <<< "$JSONline")
+        local path=$(~/.config/eww/scripts/getIconPath "$pid")
+        local newJSONline=$(jq -c "{id: .id, name: .name, icon: \"$path\"}" <<< "$JSONline")
+
+        if $flag; then
+            output="$newJSONline"
+            flag=false
+        else
+            output="${output},$newJSONline"
+        fi
+    done <<< "$input"
+    local output="[$output]"
+    echo "$(jq -c 'group_by(.id)' <<< "$output")"
+}
+getImrovedJSON () {
+    output=""
+    outputFlag=true
+    while read -r JSONline; do
+        local iconPaths=""
+        local flag=true
+        while read -r pid; do
+            if $flag; then
+                iconPaths="\"$(~/.config/eww/scripts/getIconPath $pid)\""
+                flag=false
+            else
+                iconPaths="${iconPaths},\"$(~/.config/eww/scripts/getIconPath $pid)\""
+            fi
+        done <<< "$(jq -c '.pids[]' <<< "$JSONline")"
+        local iconPaths="[${iconPaths}]"
+        local JSONline="[${JSONline},${iconPaths}]";
+        local JSONline=$(jq -c '(.[0].icons = .[1]) | del(.[0].pids) | .[0]' <<< "$JSONline")
+        if $outputFlag; then
+            output="$JSONline"
+            outputFlag=false
+        else
+            output="${output},$JSONline"
+        fi
+    done <<< "$(hyprctl -j clients | jq -c 'map({id: .workspace.id, name: .workspace.name, pid: .pid}) | group_by(.id) | map({id: (.[0].id), name: (.[0].name), pids: map(.pid)}) | map(select(.id != -1)) | .[]')"
+    echo "[$output]"
+}
+getWorkspaceYuck () {
+    local workspaceJSON=$1
+    iconBoxes=""
+    while read -r iconPath; do
+        iconBoxes="$iconBoxes $(getYuckIconBox $iconPath)"
+    done <<< "$(jq -c '.icons[]' <<< "$workspaceJSON" | tr -d "\"")"
+    endPart=$(getYuckWorkspaceNameBox "$(jq '.name' <<< "$workspaceJSON" | tr -d "\"")")
+    echo "   (button :class \"workspace\" :onclick \"hyprctl dispatch workspace $(jq '.id' <<< "$workspaceJSON") &\"
+    (box :orientation \"v\" :space-evenly false
+         (box :class \"markers\" :halign \"center\" :valign \"start\" :orientation \"h\" :space-evenly false :spacing 2
+            $iconBoxes
+         )
+         $endPart
+   ))"
+}
+getWindowsYuck () {
+    local thisoutput=""
+    while read -r workspace; do
+        thisoutput="$thisoutput"$'\n'"$(getWorkspaceYuck "$workspace")"
+    done <<< "$(jq -c '.[]' <<< "$(getImrovedJSON)")"
+    echo "(box :space-evenly false :visible enableWorkspaces
+$thisoutput
+)"
+}
+
+if test "$1" == "json"; then
+    getWindowsJSON
+elif test "$1" == "yuck"; then
+    getWindowsYuck
+else
+    printHelp
+fi
 

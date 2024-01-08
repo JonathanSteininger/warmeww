@@ -40,40 +40,54 @@
 ;need to update the stored value when this variable refreshes. otherwise there will be a desyinc in whats stored and what you see. 
 (defpoll barMinFanSpeed :interval "10h"
   :run-while enableFans
+  :initial "0"
    `head -n 1 /sys/devices/platform/applesmc.768/fan1_min; scripts/setMinFanSpeed store $(head -n 1 /sys/devices/platform/applesmc.768/fan1_min)`)
 
 
 
 (defpoll sensors :interval "2s"
   :run-while enableSensors
+  :initial '{"cpu":[],"gpu":[],"general":[]}'
   `scripts/getSensors`)
 
 (defpoll audioMuted :interval "1s"
   :run-while enableVolume
+  :initial "false"
   `scripts/checkMuted`)
 
 (defpoll volume :interval "1s"
   :run-while enableVolume
+  :initial "50"
   `scripts/volume`)
 
 (defpoll audioDevices :interval "5s"
   :run-while enableVolume
+  :initial "[]"
   `scripts/getAudioDevices all`)
+
+(defpoll networkTotal :interval "1s"
+  :run-while enableNetwork
+  :initial '{"download":0,"upload":0}'
+  `scripts/network total`)
 
 (defpoll networkTracking :interval "1s"
   :run-while enableNetwork
+  :initial '{"max":{"all":420,"lo":0,"wlan0":420},"history":[{"all":{"download":0,"upload":0},"lo":{"download":0,"upload":0},"wlan0":{"download":0,"upload":0}}]}'
   `scripts/network tracking &`)
 
 (defpoll networkInterfaces :interval "10s"
   :run-while enableNetwork
+  :initial "[]"
   `scripts/network interfaces`)
 
 (defpoll wifi :interval "1s"
   :run-while enableWifi
+  :initial '{"connected":false,"name":"none","address":"none"}'
   `scripts/wifi get`)
 
 (defpoll battery :interval "5s"
   :run-while enableBattery
+  :initial '100'
   `scripts/battery amount`)
 
 (defpoll charging :interval "5s"
@@ -93,9 +107,10 @@
   :run-while enableBattery
   `scripts/battery time`)
 
-(defpoll workspaces :interval "5s"
+(defpoll workspaces :interval "20s"
   :run-while enableWorkspaces
-  `scripts/getOpenWindowsJSON &`)
+  :initial "(box)"
+  `scripts/getOpenWindowsJSON yuck &`)
 
 (defpoll time :interval "1s"
   :run-while enableTime 
@@ -108,17 +123,21 @@
 
 (defpoll brightnessKbd :interval "5s"
   :run-while enableBrightness
+  :initial "0"
   `brightnessctl -d $KEYBOARD_BACKLIGHT g`)
 (defpoll brightnessMon :interval "5s"
   :run-while enableBrightness
+  :initial "0"
   `brightnessctl -d $MONITOR_BACKLIGHT g`)
 
 (defpoll brightnessKbdMax :interval "5h"
   :run-while enableBrightness
+  :initial "0"
   `brightnessctl -d $KEYBOARD_BACKLIGHT m`)
 
 (defpoll brightnessMonMax :interval "5h"
   :run-while enableBrightness
+  :initial "0"
   `brightnessctl -d $MONITOR_BACKLIGHT m`)
 
 (deflisten music :initial "Nothing Playing"
@@ -126,6 +145,7 @@
   "playerctl --follow -p spotify metadata --format '{{ artist }} - {{ title }}' || true")
 
 (deflisten musicBarsData 
+  :run-while enableMusicBar
   `scripts/cava -p ./cavaConfig`)
 
 (deflisten musicArt
@@ -134,6 +154,7 @@
 
 (deflisten musicLength :interval "3s"
   :run-while enableMusic
+  :initial "150"
   `playerctl --follow -p spotify metadata --format '{{mpris:length}}' | scripts/getSongLength`)
 (deflisten musicLengthText :interval "3s"
   :run-while enableMusic
@@ -160,7 +181,7 @@
 
 ; bar ----------------
 (defwidget bar []
-  (centerbox :class "bar" :orientation "h" :space-evenly false
+  (centerbox :class "bar" :orientation "h" 
              (start)
              (musicSection)
              (end))
@@ -171,23 +192,7 @@
        (workspaceSection)
        ))
 (defwidget workspaceSection []
-  (box :space-evenly false :visible enableWorkspaces
-       (for workspace in workspaces
-            (button :class "workspace" :onclick "hyprctl dispatch workspace ${workspace[0].id} &"
-                    (box :orientation "v" :space-evenly false
-                         (box :class "markers" :halign "center" :valign "start" :orientation "h" :space-evenly false :spacing 2
-                              (for app in workspace
-                                   (box :class "marker" :style "background-image: url('${app.icon}');"
-                                        )
-                                   )
-                              )
-                         (box :class "text" :space-evenly false :halign "center"
-                              "${replace(workspace[0].name, "special:", "")}"
-                              )
-                         )
-                    )
-            )
-      )
+  (literal :content workspaces)
   )
 
 (defwidget clock []
@@ -200,10 +205,10 @@
 
 (defwidget musicSection []
   (button :class "music" :onclick "scripts/windowManager open musicControls &" :visible enableMusic
-          (box :orientatino "h" :interactable true :space-evenly false :spacing 10
+          (box :orientation "h" :space-evenly false :spacing 10
                (box :class "note"
                     "♪")
-               (image :image-width: 40 :image-height 40 :path musicArt)
+               (image :image-width 40 :image-height 40 :path musicArt)
                "${music}"
                (box :class "note" 
                     "♪")
@@ -232,11 +237,11 @@
        (button :class "network" :onclick "scripts/windowManager open networkStats &" :visible enableNetwork
                (box :orientation "v" :width 70 
                     (box :orientation "h" :space-evenly false :spacing 5 :halign "center"
-                               "${round(networkTracking.history[0].all.upload/ 1000000, 3)} Mbps"
+                               "${round(networkTotal.upload/ 1000000, 3)} Mbps"
                                "󰁞"
                      )
                     (box :orientation "h" :space-evenly false :spacing 5 :halign "center"
-                               "${round(networkTracking.history[0].all.download / 1000000, 3)} Mbps"
+                               "${round(networkTotal.download / 1000000, 3)} Mbps"
                               "󰁆"
                      )
                  )
@@ -334,7 +339,7 @@
                  (box :class "h3 white hack" :halign "center"
                  "CPU Sensors"
                  )
-                 (box :orintation "h" :space-evenly true :spacing 10 
+                 (box :orientation "h" :space-evenly true :spacing 10 
                       (sensorDataColumn :data {sensors.cpu} :key1 "name" :title "Name"
                                         :addon ":" :halign "center"
                                         :titleClass "h3 white" :lineClass "sensorCatagoryLine" :textClass "h4 white sensorText")
@@ -353,7 +358,7 @@
                  (box :class "h3 white hack" :halign "center"
                  "GPU Sensors"
                  )
-                 (box :orintation "h" :space-evenly true :spacing 10 
+                 (box :orientation "h" :space-evenly true :spacing 10 
                       (sensorDataColumn :data {sensors.gpu} :key1 "name" :title "Name"
                                         :addon ":" :halign "center"
                                         :titleClass "h3 white" :lineClass "sensorCatagoryLine" :textClass "h4 white sensorText")
@@ -370,9 +375,9 @@
                  (box :class "h3 white hack" :halign "center"
                  "Other Sensors"
                  )
-                 (box :orintation "h" :space-evenly true :spacing 30
+                 (box :orientation "h" :space-evenly true :spacing 30
                       (for chunk in {sensors.general}
-                           (box :orintation "h" :space-evenly true :spacing 10
+                           (box :orientation "h" :space-evenly true :spacing 10
                                 (sensorDataColumn :data chunk :key1 "name" :title "Name"
                                                   :addon ":" :halign "center" 
                                                   :titleClass "h3 white" :lineClass "sensorCatagoryLine" :textClass "h4 white sensorText")
@@ -615,7 +620,7 @@
 (defwidget musicControls []
   (box :class "external musicControls" :orientation "v" :space-evenly false
        (box :class "image" :orientation "h" :style "background-image: url('${musicArt}');")
-       (centerbox :class "topBox" :orientation "h" :space-evenly false
+       (centerbox :class "topBox" :orientation "h"
                   (box :class "time" :halign "end" 
                        musicTimeDisplay)
                   (box :class "slider"
@@ -795,7 +800,7 @@
   )
   
 (defwidget musicBars []
-  (box :class "musicBars"  :orientation "v" :valign "end" :style "background-color: rgba(0,0,0,0)"
+  (box :class "musicBars"  :orientation "v" :valign "end" :style "background-color: rgba(0,0,0,0)" :visible enableMusicBar
         (box :class "musicBar" :height 100 :valign "end" "${replace(musicBarsData,";","
 ")}")
        )
