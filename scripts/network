@@ -34,11 +34,14 @@ getInterfacesTotal () {
     echo "$(ifstat -j | jq -c '.[] | to_entries | map(.value = {download: .value.rx_bytes, upload: .value.tx_bytes} | .) | [({key: "all", value:  {download: (map(.value.download) | add), upload: (map(.value.upload) | add)}}),.[]] | from_entries')"
 }
 
+printTotal () {
+    local input="[$(getInterfacesTotal),$(cat "$networkStateLocation")]"
+    local output=$(jq -c "map(.all) | {download: (.[0].download - .[1].download), upload: (.[0].upload - .[1].upload)}" <<< "$input")
+    echo $output
+}
 
 
 printAll () {
-    local now=$(getInterfacesTotal)
-    local past=$(cat "$networkStateLocation")
     local input="[$(getInterfacesTotal),$(cat "$networkStateLocation")]"
     local output=$(jq -c "map(to_entries) | flatten | group_by(.key) | map(.[0].value.download -= .[1].value.download | .[0].value.upload -= .[1].value.upload) | [.[].[0]] | from_entries" <<< "$input")
     echo $output
@@ -98,6 +101,8 @@ elif test "$1" == "save"; then
     saveState
 elif test "$1" == "interfaces"; then
     getInterfacesJSON
+elif test "$1" == "total"; then
+    printTotal
 elif test "$1" == "help"; then
     printHelp
 elif test "$1" == ""; then
