@@ -78,8 +78,10 @@ getUpdatedTrackingJSON () {
     echo "$output"
 }
 
-saveState () {
+saveTracking() {
     saveTrackingJSON "$(getUpdatedTrackingJSON)"
+}
+saveSimple () {
     echo "$(getInterfacesTotal)" > $networkStateLocation
 }
 
@@ -91,18 +93,20 @@ getBiggestJSON () {
 
 if test "$1" == "all"; then
     printAll
-    saveState
+    saveSimple
 elif test "$1" == "tracking"; then
     everything=$(getUpdatedTrackingJSON)
-    saveState
+    saveTracking
     maxs=$(getBiggestJSON "$everything")
     echo "{\"max\":${maxs},\"history\":${everything}}"
 elif test "$1" == "save"; then
-    saveState
+    saveTracking
+    saveSimple
 elif test "$1" == "interfaces"; then
     getInterfacesJSON
 elif test "$1" == "total"; then
     printTotal
+    saveSimple
 elif test "$1" == "help"; then
     printHelp
 elif test "$1" == ""; then
