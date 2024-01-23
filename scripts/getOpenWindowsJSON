@@ -93,7 +93,7 @@ getImrovedJSON () {
         else
             output="${output},$JSONline"
         fi
-    done <<< "$(hyprctl -j clients | jq -c 'map({id: .workspace.id, name: .workspace.name, pid: .pid}) | group_by(.id) | map({id: (.[0].id), name: (.[0].name), pids: map(.pid)}) | map(select(.id != -1)) | .[]')"
+    done <<< "$(hyprctl -j clients | jq -c 'map({id: .workspace.id, name: .workspace.name, pid: .pid}) | group_by(.id) | map({id: (.[0].id), name: (.[0].name), pids: map(select(.pid > 0) | .pid)}) | .[] | select(.id != -1)')"
     echo "[$output]"
 }
 getWorkspaceYuck () {
