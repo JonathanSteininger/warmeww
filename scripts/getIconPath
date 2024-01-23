@@ -4,12 +4,13 @@ pid=$1
 if test "$pid" == "-1"; then 
     exit 0
 fi
-iconCacheLocation="$HOME/.config/eww/scripts/iconCache"
-comm=$(ps --noheader -q "$pid" -o comm=)
-exe=$(ps --noheader -q "$pid" -o exe=)
 
-commParent=$(ps --noheader -q $(ps --noheader -q "$pid" -o ppid=) -o comm=)
-exeParent=$(ps --noheader -q $(ps --noheader -q "$pid" -o ppid=) -o exe=)
+iconCacheLocation="$HOME/.config/eww/scripts/iconCache"
+comm=$(ps --no-header -q "$pid" -o comm=)
+exe=$(ps --no-header -q "$pid" -o exe=)
+
+commParent=$(ps --no-header -q $(ps --no-header -q "$pid" -o ppid=) -o comm=)
+exeParent=$(ps --no-header -q $(ps --no-header -q "$pid" -o ppid=) -o exe=)
 
 checkIconCache () {
     local commandName=$1
@@ -29,7 +30,9 @@ cacheIcon () {
 
 mainCatagory=( "arcticons-dark" )
 
-attempts=(  "128x128"
+attempts=(  
+            "scalable" 
+            "128x128"
             "192x192"
             "256x256"
             "384x384"
@@ -43,9 +46,9 @@ attempts=(  "128x128"
             "24x24"
             "22x22"
             "16x16"
-            "scalable"
             "pixmaps"
-            "symbolic")
+            "symbolic"
+)
 
 findBestFit () {
     local allPaths=$1
@@ -69,7 +72,7 @@ findBestFit () {
 
 getFilePath () {
     local searchString=$1
-    local output=$(grep -Ri "/usr/share/applications/" -e "$searchString" | awk -F: '{ print $1 }' | sed -n "1"p)
+    local output=$(grep -Ri "/usr/share/applications/" -e "=$searchString" | grep -v "mimeinfo" | awk -F: '{ print $1 }' | sed -n "1"p)
     echo "$output"
 }
 
