@@ -30,11 +30,12 @@ $secondaryBarColor: #EF4040;
     all:unset;
 }
 box {
-    font-family: iosevka regular;
+    font-family: iosevka;
 }
 
 .bar{
     background-color: $background; 
+    font-size: 14pt;
 }
 
 .bar button{
@@ -280,9 +281,11 @@ $netDownColor: $accent;
     margin-bottom: 10px;
 }
 .musicBar {
-
     color: $barColor;
-    font-size: 15pt;
+    font-size: 22pt;
     font-family: hack;
     letter-spacing: 3px;
+}
+.network {
+    font-size: 12pt;
 }
