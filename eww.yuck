@@ -142,7 +142,7 @@
 
 (deflisten music :initial "Nothing Playing"
   :run-while enableMusic
-  "playerctl --follow -p spotify metadata --format '{{ artist }} - {{ title }}' || true")
+  "playerctl --follow -p spotify metadata --format '{{ status }} | {{ artist }} - {{ title }}' || true")
 
 (deflisten musicBarsData 
   :run-while enableMusicBar
@@ -207,7 +207,7 @@
   (button :class "music" :onclick "scripts/windowManager open musicControls &" :visible enableMusic
           (box :orientation "h" :space-evenly false :spacing 10
                (image :image-width 40 :image-height 40 :path musicArt)
-               "${musicPlaying != "" ? "${musicPlaying} | ${music}" : "Spotify Not Open"}"
+               "${musicPlaying != "" ? music : "Spotify Not Open"}"
                ))
   )
 
