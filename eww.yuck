@@ -7,17 +7,17 @@
 
 ; these two are in the same sub menu. make both false if you want it gone completely 
   (defvar enableSensors true)
-  (defvar enableFans true)
+  (defvar enableFans false)
 
 
-(defvar enableWifi true)
-(defvar enableBrightness true)
+(defvar enableWifi false)
+(defvar enableBrightness false)
 (defvar enableNetwork true)
 (defvar enablePerformance true)
 (defvar enableVolume true)
 
 
-(defvar enableBattery true)
+(defvar enableBattery false)
   (defvar enablePowerProfileSelection true) ; in the sub menu of battery
 
 
@@ -170,7 +170,7 @@
   `playerctl --follow -p spotify position --format '{{duration(position)}}'`)
 (deflisten musicPlaying :interval "1s"
   :run-while enableMusic
-  :initial "not"
+  :initial ""
   `playerctl --follow -p spotify status`)
 
 
@@ -206,12 +206,8 @@
 (defwidget musicSection []
   (button :class "music" :onclick "scripts/windowManager open musicControls &" :visible enableMusic
           (box :orientation "h" :space-evenly false :spacing 10
-               (box :class "note"
-                    "♪")
                (image :image-width 40 :image-height 40 :path musicArt)
-               "${music}"
-               (box :class "note" 
-                    "♪")
+               "${musicPlaying != "" ? "${musicPlaying} | ${music}" : "Spotify Not Open"}"
                ))
   )
 
@@ -649,7 +645,7 @@
 
 ; WINDOWS =========================================================
 (defwindow bartop
-  :monitor 0
+  :monitor 1
   :geometry (geometry :x "0%"
                       :y "0px"
                       :width "100%"
@@ -661,7 +657,7 @@
   (bar)
   )
 (defwindow datePopOut
-  :monitor 0
+  :monitor 1
   :geometry (geometry :x "0%"
                       :y "0%"
                       :width "20%"
@@ -673,7 +669,7 @@
   (dateBox)
   )
 (defwindow musicControls
-  :monitor 0
+  :monitor 1
   :geometry (geometry :x "0%"
                       :y "0px"
                       :width "400px"
@@ -686,7 +682,7 @@
   )
 
 (defwindow tempStats
-  :monitor 0
+  :monitor 1
   :geometry (geometry :x "0%"
                       :y "0px"
                       :width "300px"
@@ -698,7 +694,7 @@
   (tempStats)
   )
 (defwindow wifiStats
-  :monitor 0
+  :monitor 1
   :geometry (geometry :x "0%"
                       :y "0px"
                       :width "300px"
@@ -710,7 +706,7 @@
   (wifiStats)
   )
 (defwindow audioControls
-  :monitor 0
+  :monitor 1
   :geometry (geometry :x "0%"
                       :y "0px"
                       :width "300px"
@@ -722,7 +718,7 @@
   (audioControls)
   )
 (defwindow batteryInfo
-  :monitor 0
+  :monitor 1
   :geometry (geometry :x "0%"
                       :y "0px"
                       :width "300px"
@@ -735,7 +731,7 @@
   )
 
 (defwindow computerStats
-  :monitor 0
+  :monitor 1
   :geometry (geometry :x "0%"
                       :y "0px"
                       :width "450px"
@@ -748,7 +744,7 @@
   )
 
 (defwindow networkStats
-  :monitor 0
+  :monitor 1
   :geometry (geometry :x "0%"
                       :y "0px"
                       :width "450px"
@@ -761,7 +757,7 @@
   )
 
 (defwindow brightnessControls
-  :monitor 0
+  :monitor 1
   :geometry (geometry :x "0%"
                       :y "0px"
                       :width "300px"
@@ -778,7 +774,7 @@
 (defwidget closerCover []
   (eventbox :onclick "scripts/windowManager close &"))
 (defwindow windowCloser
-  :monitor 0
+  :monitor 1
   :geometry (geometry :width "100%" :height "100%")
   :stacking "fg"
   :focusable false
@@ -787,7 +783,7 @@
 
 ;musicbar
 (defwindow musicBars
-  :monitor 0
+  :monitor 1
   :geometry (geometry :x "0%"
                       :y "0px"
                       :width "100%"
