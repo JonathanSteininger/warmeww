@@ -146,7 +146,7 @@
 
 (deflisten musicBarsData 
   :run-while enableMusicBar
-  `scripts/cava -p ./cavaConfig`)
+  `cava -p ./cavaConfig | scripts/cavawrapper`)
 
 (deflisten musicArt
   :run-while enableMusic
