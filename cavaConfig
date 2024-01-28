@@ -64,12 +64,12 @@ source = auto
 [output]
 
 method = raw
-# Raw data format. Can be 'binary' or 'ascii' or 'unicodeBars'.
-data_format = unicodeBars
+# Raw data format. Can be 'binary' or 'ascii'.
+data_format = ascii
 
 # Ascii max value. In 'ascii' mode range will run from 0 to value specified here
 # will define how high the bars are in unicodeBars mode. (ascii_max_range / 8 == amount of lines high)
-ascii_max_range = 159
+ascii_max_range = 160
 
 # Ascii delimiters. In ascii format each bar and frame is separated by a delimiters.
 # Use decimal value in ascii table (i.e. 59 = ';' and 10 = '\n' (line feed)).
