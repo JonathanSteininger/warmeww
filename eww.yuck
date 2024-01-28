@@ -645,7 +645,7 @@
 
 ; WINDOWS =========================================================
 (defwindow bartop
-  :monitor 1
+  :monitor 0
   :geometry (geometry :x "0%"
                       :y "0px"
                       :width "100%"
@@ -657,7 +657,7 @@
   (bar)
   )
 (defwindow datePopOut
-  :monitor 1
+  :monitor 0
   :geometry (geometry :x "0%"
                       :y "0%"
                       :width "20%"
@@ -669,7 +669,7 @@
   (dateBox)
   )
 (defwindow musicControls
-  :monitor 1
+  :monitor 0
   :geometry (geometry :x "0%"
                       :y "0px"
                       :width "400px"
@@ -682,7 +682,7 @@
   )
 
 (defwindow tempStats
-  :monitor 1
+  :monitor 0
   :geometry (geometry :x "0%"
                       :y "0px"
                       :width "300px"
@@ -694,7 +694,7 @@
   (tempStats)
   )
 (defwindow wifiStats
-  :monitor 1
+  :monitor 0
   :geometry (geometry :x "0%"
                       :y "0px"
                       :width "300px"
@@ -706,7 +706,7 @@
   (wifiStats)
   )
 (defwindow audioControls
-  :monitor 1
+  :monitor 0
   :geometry (geometry :x "0%"
                       :y "0px"
                       :width "300px"
@@ -718,7 +718,7 @@
   (audioControls)
   )
 (defwindow batteryInfo
-  :monitor 1
+  :monitor 0
   :geometry (geometry :x "0%"
                       :y "0px"
                       :width "300px"
@@ -731,7 +731,7 @@
   )
 
 (defwindow computerStats
-  :monitor 1
+  :monitor 0
   :geometry (geometry :x "0%"
                       :y "0px"
                       :width "450px"
@@ -744,7 +744,7 @@
   )
 
 (defwindow networkStats
-  :monitor 1
+  :monitor 0
   :geometry (geometry :x "0%"
                       :y "0px"
                       :width "450px"
@@ -757,7 +757,7 @@
   )
 
 (defwindow brightnessControls
-  :monitor 1
+  :monitor 0
   :geometry (geometry :x "0%"
                       :y "0px"
                       :width "300px"
@@ -774,7 +774,7 @@
 (defwidget closerCover []
   (eventbox :onclick "scripts/windowManager close &"))
 (defwindow windowCloser
-  :monitor 1
+  :monitor 0
   :geometry (geometry :width "100%" :height "100%")
   :stacking "fg"
   :focusable false
@@ -783,7 +783,7 @@
 
 ;musicbar
 (defwindow musicBars
-  :monitor 1
+  :monitor 0
   :geometry (geometry :x "0%"
                       :y "0px"
                       :width "100%"
