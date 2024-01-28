@@ -3,7 +3,6 @@
 (defvar enableTime true)
 (defvar enableWorkspaces true)
 (defvar enableMusic true)
-(defvar enableMusicBar true)
 
 ; these two are in the same sub menu. make both false if you want it gone completely 
   (defvar enableSensors true)
@@ -20,6 +19,28 @@
 (defvar enableBattery false)
   (defvar enablePowerProfileSelection true) ; in the sub menu of battery
 
+
+; cava options (musicBars) =============================================================
+
+(defvar enableMusicBar true)
+
+; theres a chance the bars are being pushed offscreen.
+; configure the cavaConfig file for the amount / height / equalizer / gravity / wave filters. 
+
+; --minimum-output-height [num]
+; this variable is used to for the cavawrapper applications that passes the data to eww.
+; the lower this is the less performance eww will use when not playing audio.
+; However, if its to low then eww stutters due to the rapid change in the output length (most noticible is when pausing an playing audio).
+; this depends on how high you have set your bars too. but 64 (7 lines of text) is a pretty good balance.
+
+; --bar-added-height [num]
+; this variable adds a set amount of height to every bar. 
+; set this to 0 if you dont want to see any bars when not playing audio.
+; increase it if you want a bigger bigger permenant bar. if you set this really big it will lower performance.
+
+(deflisten musicBarsData 
+  :run-while enableMusicBar
+  "cava -p ./cavaConfig | scripts/cavawrapper --bar-added-height 1 --minimum-output-height 64")
 
 ; VARIABLES ===================================================
 
@@ -144,9 +165,6 @@
   :run-while enableMusic
   "playerctl --follow -p spotify metadata --format '{{ status }} | {{ artist }} - {{ title }}' || true")
 
-(deflisten musicBarsData 
-  :run-while enableMusicBar
-  `cava -p ./cavaConfig | scripts/cavawrapper`)
 
 (deflisten musicArt
   :run-while enableMusic
