@@ -1,0 +1,3 @@
+[submodule "CavaRawBarWrapper"]
+	path = CavaRawBarWrapper
+	url = https://github.com/JonathanSteininger/CavaRawBarWrapper.git
