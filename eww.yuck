@@ -40,7 +40,7 @@
 
 (deflisten musicBarsData 
   :run-while enableMusicBar
-  "cava -p ./cavaConfig | scripts/cavawrapper --bar-added-height 0 --minimum-output-height 8")
+  "cava -p ./cavaConfig | scripts/cavawrapper --bar-added-height 1 --minimum-output-height 7")
 
 ; VARIABLES ===================================================
 
