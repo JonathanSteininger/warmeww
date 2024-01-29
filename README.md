@@ -32,7 +32,9 @@ cp cava ../scripts/
 `eww open bartop`
 <h2>Rest of README.md</h2>
 </p>
-<image src="https://github.com/JonathanSteininger/warmeww/assets/51342815/77023ddc-bac9-4b72-b871-3ef6454f6782">
+<image src="https://github.com/JonathanSteininger/warmeww/assets/51342815/0b535b3c-feaa-4edf-9192-1ceb9afdac78">
+
+
 
 <h3>simple configureation</h3>
   <p>
