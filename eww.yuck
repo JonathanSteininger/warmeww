@@ -40,7 +40,7 @@
 
 (deflisten musicBarsData 
   :run-while enableMusicBar
-  "cava -p ./cavaConfig | scripts/cavawrapper --bar-added-height 1 --minimum-output-height 64")
+  "cava -p ./cavaConfig | scripts/cavawrapper --bar-added-height 0 --minimum-output-height 64")
 
 ; VARIABLES ===================================================
 
@@ -814,8 +814,8 @@
   )
   
 (defwidget musicBars []
-  (box :class "musicBars"  :orientation "v" :valign "end" :style "background-color: rgba(0,0,0,0)" :visible enableMusicBar
-        (box :class "musicBar" :height 100 :valign "end" "${replace(musicBarsData,";","
+  (box :valign "end" :style "background-color: rgba(0,0,0,0)" :visible enableMusicBar
+        (box :class "musicBar" :valign "end" "${replace(musicBarsData,";","
 ")}")
        )
 )
