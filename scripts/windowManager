@@ -11,6 +11,7 @@ lastOpenedWindow=$(tail -n 1 $pathToLastOpenedWindow)
 #functions
 
 closeWindow () {
+    sleep 0.1
     eww close $(eww windows | grep "*" | grep -Ev "($ignoredWindows)" | tr -d "*" | tr "\n" " ")
     echo "" > $pathToLastOpenedWindow
 }
