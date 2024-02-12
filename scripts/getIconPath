@@ -28,7 +28,7 @@ cacheIcon () {
     echo "$pathToIcon" > "$finalPath"
 }
 
-mainCatagory=( "arcticons-dark" )
+mainCatagory=( "arcticons-dark" "Papirus" )
 
 attempts=(  
             "scalable" 
