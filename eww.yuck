@@ -199,9 +199,11 @@
 
 ; bar ----------------
 (defwidget bar []
-  (centerbox :class "bar" :orientation "h" 
+  (box :class "bar" :orientation "h" :space-evenly false
              (start)
+             (box :class "borderLeftSlim borderRightSlim" :hexpand true "")
              (musicSection)
+             (box :class "borderLeftSlim borderRightSlim" :hexpand true "")
              (end))
   )
 (defwidget start []

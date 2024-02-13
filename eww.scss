@@ -20,6 +20,7 @@ $accent-bright-solid: $bright-accent-solid;
 $minPadding: 20px;
 $borderRadius: 10px;
 $borderDefault: solid 2px $accent;
+$borderSlim: solid 1px $accent;
 
 
 $barColor: #9A031E;
@@ -40,8 +41,14 @@ box {
 
 .bar button{
     padding: 0 $minPadding;
-    border-left: 1px solid $accent;
-    border-right: 1px solid $accent;
+    border-left: $borderSlim;
+    border-right: $borderSlim;;
+}
+.borderLeftSlim{
+    border-left: $borderSlim;
+}
+.borderRightSlim{
+    border-right: $borderSlim;
 }
 
 box{
