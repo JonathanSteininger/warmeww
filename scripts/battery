@@ -16,9 +16,34 @@ Commands:
 "
 }
 
+ notCharging () {
+    chargingColumn="$(awk '{ print $3 }' <<< "$batteryInfo" )"
+    if test "$chargingColumn" == "Charging,"; then
+        return 1
+    elif test "$chargingColumn" == "Full,"; then
+        return 1
+    else
+        return 0
+    fi
+}
+
+checkMessageOpen () {
+    makoctl list | jq ".data[0] | map(select(.[\"app-name\"].data == \"$1\")) | length > 0"
+}
+
+writeWarning () {
+    if test "$(checkMessageOpen "$2")" == "false";then
+        notify-send -e -t 0 -a "$2" System "$1"
+        #notify-send -i /usr/share/Adwaita/symbolic/status/battery-low-symbolic.svg -e -t 0 -a "$2" System "$1"
+    fi
+}
+
 printAmount () {
-    temp=$(awk '{ print $4 }' <<< "$batteryInfo" | tr -d "[%,]")
-    echo $temp
+    local amount=$(awk '{ print $4 }' <<< "$batteryInfo" | tr -d "[%,]")
+    if (( amount <= 5 )) && notCharging; then
+        writeWarning "Battery Below 5%!" "batteryWarning" && export WARNED_BATTERY=true
+    fi
+    echo "$amount"
 }
 
 printCharging () {
