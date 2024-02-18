@@ -1,22 +1,25 @@
 ; Variables to disable features that need to be heavily altered to your machine.
 ; if the variable is tabbed it means its in the sub menu
+(defvar testVar "a\\nb")
+(deflisten testVar2 
+  `./temp`)
 (defvar enableTime true)
 (defvar enableWorkspaces true)
 (defvar enableMusic true)
 
 ; these two are in the same sub menu. make both false if you want it gone completely 
   (defvar enableSensors true)
-  (defvar enableFans false)
+  (defvar enableFans true)
 
 
-(defvar enableWifi false)
-(defvar enableBrightness false)
+(defvar enableWifi true)
+(defvar enableBrightness true)
 (defvar enableNetwork true)
 (defvar enablePerformance true)
 (defvar enableVolume true)
 
 
-(defvar enableBattery false)
+(defvar enableBattery true)
   (defvar enablePowerProfileSelection true) ; in the sub menu of battery
 
 
@@ -263,7 +266,7 @@
                  )
                )
        (button :class "performance" :visible enablePerformance
-               :onclick "scripts/windowManager open computerStats"
+               :onclick "scripts/windowManager open computerStats &"
                (box :space-evenly false
                     (box :class "icon" 
                          "  ")
