@@ -202,12 +202,17 @@
 
 ; bar ----------------
 (defwidget bar []
-  (box :class "bar" :orientation "h" :space-evenly false
-             (start)
-             (box :class "borderLeftSlim borderRightSlim" :hexpand true "")
-             (musicSection)
-             (box :class "borderLeftSlim borderRightSlim" :hexpand true "")
-             (end))
+  (centerbox :class "bar" :orientation "h" 
+             (box :class "borderRightSlim" :halign "start" :space-evenly false
+                   (start)
+                   )
+             (box :class "borderRightSlim borderLeftSlim" :space-evenly false
+                   (musicSection)
+                   )
+             (box :class "borderLeftSlim" :halign "end" :space-evenly false
+                   (end)
+                   )
+       )
   )
 (defwidget start []
   (box :class "start" :halign "start" :space-evenly false 
@@ -227,7 +232,7 @@
   )
 
 (defwidget musicSection []
-  (button :class "music" :onclick "scripts/windowManager open musicControls &" :visible enableMusic
+  (button :class "borderLeft borderRight music" :onclick "scripts/windowManager open musicControls &" :visible enableMusic
           (box :orientation "h" :space-evenly false :spacing 10
                (image :image-width 40 :image-height 40 :path musicArt)
                "${musicPlaying != "" ? music : "Spotify Not Open"}"
